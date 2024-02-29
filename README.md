@@ -5,6 +5,7 @@ This project uses Spring Boot framework as backend.
 - JRE 21
 - JDK 21
 - Gradle 8.6
+- make
 
 # Get start
 - Clone this repository
