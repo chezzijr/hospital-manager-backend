@@ -5,7 +5,7 @@ WORKDIR /build-workspace
 COPY . .
 
 # Build, Test and publish.
-RUN gradle eclipse && gradle clean build
+RUN gradle dependencies --refresh-dependencies && gradle clean build
 
 # App image.
 FROM amazoncorretto:21-alpine AS runtime
