@@ -2,9 +2,10 @@
 
 # update gradle dependencies
 deps:
-	./gradlew build --refresh-dependencies
-	./gradlew clean
-	./gradlew eclipse
+	./gradlew dependencies --refresh-dependencies
 
 run:
 	./gradlew run
+
+build:
+	./gradlew clean build
