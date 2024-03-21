@@ -10,8 +10,23 @@ import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 
 public interface AuthService {
+    /**
+     * Sign in a user using their email and password
+     * @param email The user's email, non-null and non-empty
+     * @param password The user's password, non-null and non-empty
+     * @return The sign-in response payload
+     * @throws Exception if the user does not exist
+     */
     public SignInInfo signInEmailPassword(String email, String password) throws Exception;
 
+    /**
+     * Sign up a user using their email and password
+     * After creating the user, the user will be signed in
+     * @param email The user's email, non-null and non-empty
+     * @param password The user's password, non-null and non-empty
+     * @return The sign-in response payload
+     * @throws Exception if the user does not exist
+     */
     public SignInInfo signUpEmailPassword(String email, String password) throws Exception;
 
     /**

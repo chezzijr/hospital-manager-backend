@@ -28,12 +28,12 @@ public interface AuthRepository {
     UserRecord getUser(String id) throws FirebaseAuthException;
 
     /**
-     * Get a user by their email and password
+     * Sign in a user using their email and password
      * 
      * @param email    The user's email, non-null and non-empty
      * @param password The user's password, non-null and non-empty
-     * @return The user's record
-     * @throws Exception if the user does not exist, or the password is incorrect
+     * @return The sign-in response payload
+     * @throws Exception if the user does not exist
      */
     SignInResponsePayload signInUserEmailPassword(String email, String password) throws Exception;
 
@@ -48,7 +48,7 @@ public interface AuthRepository {
     UserRecord createUserEmailPassword(String email, String password) throws FirebaseAuthException;
 
     /**
-     * Create a new user
+     * Create a new user via CreateRequest builder
      * 
      * @param req The user's request, non-null
      * @return The user's record
@@ -57,7 +57,7 @@ public interface AuthRepository {
     UserRecord createUser(CreateRequest req) throws FirebaseAuthException;
 
     /**
-     * Update a user
+     * Update a user, using UpdateRequest builder
      * 
      * @param req The user's request, non-null
      * @return The user's record
@@ -74,6 +74,13 @@ public interface AuthRepository {
      */
     String sendEmailVerification(String idToken) throws Exception;
 
+    /**
+     * Verify idToken
+     * 
+     * @param token The token to verify, non-null and non-empty
+     * @return The token's payload
+     * @throws FirebaseAuthException if the token is invalid
+     */
     FirebaseToken verifyToken(String token) throws FirebaseAuthException;
 }
 
