@@ -38,7 +38,7 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
-    @PostMapping(value="/login", consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value="/signin", consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
     public HashMap<String, Object> getUser(@RequestBody HashMap<String, String> formData) {
         String email = formData.get("email");
         String password = formData.get("password");
@@ -54,7 +54,7 @@ public class AuthController {
         }
     }
 
-    @PostMapping(value="/register", consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value="/signup", consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
     public HashMap<String, Object> registerUser(@RequestBody HashMap<String, String> formData) {
         String email = formData.get("email");
         String password = formData.get("password");
