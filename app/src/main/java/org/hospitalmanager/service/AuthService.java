@@ -43,6 +43,13 @@ public interface AuthService {
      * @throws FirebaseAuthException if the token is invalid
      */
     public FirebaseToken verifyToken(String token) throws FirebaseAuthException;
+
+    /**
+     * Send a password reset email to the user
+     * @param email The user's email, non-null and non-empty
+     * @throws Exception if the email could not be sent
+     */
+    public void sendPasswordResetEmail(String email) throws Exception;
 }
 
 @Service
@@ -72,6 +79,12 @@ class AuthServiceImpl implements AuthService {
     @Override
     public void sendVerificationEmail(String idToken) throws Exception {
         authRepository.sendEmailVerification(idToken);
+    }
+
+    @Override
+    public void sendPasswordResetEmail(String email) throws Exception {
+        // check if user exists
+        authRepository.sendPasswordResetEmail(email);
     }
 
     @Override

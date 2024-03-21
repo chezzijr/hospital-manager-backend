@@ -82,6 +82,15 @@ public interface AuthRepository {
      * @throws FirebaseAuthException if the token is invalid
      */
     FirebaseToken verifyToken(String token) throws FirebaseAuthException;
+
+    /**
+     * Send a password reset email to the user
+     * 
+     * @param email The user's email, non-null and non-empty
+     * @return The user's email
+     * @throws FirebaseAuthException if the user does not exist
+     */
+    String sendPasswordResetEmail(String email) throws Exception;
 }
 
 @Repository
@@ -94,6 +103,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
     private static final String VERIFY_PASSWORD_URL = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=";
     private static final String VERIFY_EMAIL_URL = "https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=";
+    private static final String PASSWORD_RESET_URL = "https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=";
 
     @Override
     public UserRecord getUser(String id) throws FirebaseAuthException {
@@ -159,5 +169,22 @@ class AuthRepositoryImpl implements AuthRepository {
     public FirebaseToken verifyToken(String idToken) throws FirebaseAuthException {
         FirebaseToken token = firebase.getAuth().verifyIdToken(idToken);
         return token;
+    }
+
+    @Override
+    public String sendPasswordResetEmail(String email) throws Exception {
+        // Since firebase admin sdk does not have a method to send a password reset email,
+        // we have to use the REST API
+        WebClient webClient = WebClient.create();
+        // response is an object with field email
+        var resp = webClient
+                .post()
+                .uri(PASSWORD_RESET_URL + apiKey)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(Map.of("requestType", "PASSWORD_RESET", "email", email))
+                .retrieve()
+                .bodyToMono(Map.class)
+                .block();
+        return resp.get("email").toString();
     }
 }
