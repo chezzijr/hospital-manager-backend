@@ -1,0 +1,156 @@
+package org.hospitalmanager.repository;
+
+import java.util.Map;
+
+import org.hospitalmanager.config.Firebase;
+import org.hospitalmanager.model.SignInResponsePayload;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.http.MediaType;
+
+import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.auth.FirebaseToken;
+import com.google.firebase.auth.UserRecord;
+import com.google.firebase.auth.UserRecord.UpdateRequest;
+import com.google.firebase.auth.UserRecord.CreateRequest;
+
+public interface AuthRepository {
+    /**
+     * Get a user by their ID
+     * 
+     * @param id The user's ID, non-null and non-empty
+     * @return The user's record
+     * @throws FirebaseAuthException if the user does not exist
+     */
+    UserRecord getUser(String id) throws FirebaseAuthException;
+
+    /**
+     * Get a user by their email and password
+     * 
+     * @param email    The user's email, non-null and non-empty
+     * @param password The user's password, non-null and non-empty
+     * @return The user's record
+     * @throws Exception if the user does not exist, or the password is incorrect
+     */
+    SignInResponsePayload signInUserEmailPassword(String email, String password) throws Exception;
+
+    /**
+     * Create a new user
+     * 
+     * @param email    The user's email, non-null and non-empty
+     * @param password The user's password, non-null and non-empty
+     * @return The user's record
+     * @throws FirebaseAuthException if the user already exists
+     */
+    UserRecord createUserEmailPassword(String email, String password) throws FirebaseAuthException;
+
+    /**
+     * Create a new user
+     * 
+     * @param req The user's request, non-null
+     * @return The user's record
+     * @throws FirebaseAuthException if the user already exists
+     */
+    UserRecord createUser(CreateRequest req) throws FirebaseAuthException;
+
+    /**
+     * Update a user
+     * 
+     * @param req The user's request, non-null
+     * @return The user's record
+     * @throws FirebaseAuthException if the user does not exist
+     */
+    UserRecord updateUser(UpdateRequest req) throws FirebaseAuthException;
+
+    /**
+     * Generate an email verification link and send it to the user's email
+     * 
+     * @param email The user's email, non-null and non-empty
+     * @return The email verification link
+     * @throws FirebaseAuthException if the user does not exist
+     */
+    String sendEmailVerification(String idToken) throws Exception;
+
+    FirebaseToken verifyToken(String token) throws FirebaseAuthException;
+}
+
+@Repository
+class AuthRepositoryImpl implements AuthRepository {
+    @Autowired
+    private Firebase firebase;
+
+    @Value("${firebase.web.api.key}")
+    private String apiKey;
+
+    private static final String VERIFY_PASSWORD_URL = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=";
+    private static final String VERIFY_EMAIL_URL = "https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=";
+
+    @Override
+    public UserRecord getUser(String id) throws FirebaseAuthException {
+        return firebase.getAuth().getUser(id);
+    }
+
+    @Override
+    public SignInResponsePayload signInUserEmailPassword(String email, String password) throws Exception {
+        // Since firebase admin sdk does not have a method to verify a user's password,
+        // we have to use the REST API
+        WebClient webClient = WebClient.create();
+        SignInResponsePayload resp = webClient
+                .post()
+                .uri(VERIFY_PASSWORD_URL + apiKey)
+                .bodyValue(Map.of("email", email, "password", password, "returnSecureToken", true))
+                .retrieve()
+                .bodyToMono(SignInResponsePayload.class)
+                .block();
+        return resp;
+    }
+
+    @Override
+    public UserRecord createUserEmailPassword(String email, String password) throws FirebaseAuthException {
+        CreateRequest req = new CreateRequest()
+                .setEmail(email)
+                .setPassword(password);
+        UserRecord usr = firebase.getAuth().createUser(req);
+        return usr;
+    }
+
+    @Override
+    public UserRecord createUser(CreateRequest req) throws FirebaseAuthException {
+        UserRecord usr = firebase.getAuth().createUser(req);
+        return usr;
+    }
+
+    @Override
+    public UserRecord updateUser(UpdateRequest req) throws FirebaseAuthException {
+        UserRecord usr = firebase.getAuth().updateUser(req);
+        return usr;
+    }
+
+    @Override
+    public String sendEmailVerification(String idToken) throws Exception {
+        // Since firebase admin sdk does not have a method to send an email verification
+        // link, we have to use the REST API
+        WebClient webClient = WebClient.create();
+        // response is an object with field email
+        var resp = webClient
+                .post()
+                .uri(VERIFY_EMAIL_URL + apiKey)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(Map.of("requestType", "VERIFY_EMAIL", "idToken", idToken))
+                .retrieve()
+                .bodyToMono(Map.class)
+                .block();
+
+        String email = resp.get("email").toString();
+        return email;
+    }
+
+    @Override
+    public FirebaseToken verifyToken(String idToken) throws FirebaseAuthException {
+        FirebaseToken token = firebase.getAuth().verifyIdToken(idToken);
+        return token;
+    }
+}

@@ -10,9 +10,15 @@ import javax.annotation.PostConstruct;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
+import com.google.firebase.auth.FirebaseAuth;
+
+public interface Firebase {
+    FirebaseApp getApp();
+    FirebaseAuth getAuth();
+}
 
 @Configuration
-class Firebase {
+class FirebaseConfig implements Firebase {
     @Autowired
     private ResourceLoader resourceLoader;
 
@@ -23,5 +29,15 @@ class Firebase {
                 .setCredentials(GoogleCredentials.fromStream(resource.getInputStream()))
                 .build();
         FirebaseApp.initializeApp(options);
+    }
+
+    @Override
+    public FirebaseApp getApp() {
+        return FirebaseApp.getInstance();
+    }
+
+    @Override
+    public FirebaseAuth getAuth() {
+        return FirebaseAuth.getInstance(getApp());
     }
 }
