@@ -110,7 +110,7 @@ class AuthRepositoryImpl implements AuthRepository {
     @Value("${firebase.web.api.key}")
     private String apiKey;
 
-    private static final String VERIFY_PASSWORD_URL = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=";
+    private static final String SIGNIN_PASSWORD_URL = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=";
     private static final String VERIFY_EMAIL_URL = "https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=";
     private static final String PASSWORD_RESET_URL = "https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=";
     private static final String REFRESH_TOKEN_URL = "https://securetoken.googleapis.com/v1/token?key=";
@@ -127,7 +127,7 @@ class AuthRepositoryImpl implements AuthRepository {
         WebClient webClient = WebClient.create();
         SignInResponsePayload resp = webClient
                 .post()
-                .uri(VERIFY_PASSWORD_URL + apiKey)
+                .uri(SIGNIN_PASSWORD_URL + apiKey)
                 .bodyValue(Map.of("email", email, "password", password, "returnSecureToken", true))
                 .retrieve()
                 .bodyToMono(SignInResponsePayload.class)

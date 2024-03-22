@@ -9,16 +9,19 @@ import org.springframework.stereotype.Service;
 
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
+import com.google.firebase.auth.UserRecord;
+import com.google.firebase.database.annotations.Nullable;
 
 public interface AuthService {
     /**
      * Sign in a user using their email and password
      * @param email The user's email, non-null and non-empty
      * @param password The user's password, non-null and non-empty
+     * @param user The user record, nullable, prevent duplicate calls to the database
      * @return The sign-in response payload
      * @throws Exception if the user does not exist
      */
-    public SignInInfo signInEmailPassword(String email, String password) throws Exception;
+    public SignInInfo signInEmailPassword(String email, String password, @Nullable UserRecord user) throws Exception;
 
     /**
      * Sign up a user using their email and password
@@ -39,6 +42,7 @@ public interface AuthService {
 
     /**
      * Verify a token
+     * Other controllers should call this method to verify a token before proceeding
      * @param token The token to verify, non-null and non-empty
      * @return true if the token is valid, false otherwise
      * @throws FirebaseAuthException if the token is invalid
@@ -67,9 +71,11 @@ class AuthServiceImpl implements AuthService {
     private AuthRepository authRepository;
 
     @Override
-    public SignInInfo signInEmailPassword(String email, String password) throws Exception {
+    public SignInInfo signInEmailPassword(String email, String password, @Nullable UserRecord user) throws Exception {
         var payload = authRepository.signInUserEmailPassword(email, password);
-        var user = authRepository.getUser(payload.getLocalId());
+        if (user == null) {
+            user = authRepository.getUser(payload.getLocalId());
+        }
 
         String idToken = payload.getIdToken();
         if (!user.isEmailVerified()) {
@@ -82,7 +88,7 @@ class AuthServiceImpl implements AuthService {
     @Override
     public SignInInfo signUpEmailPassword(String email, String password) throws Exception {
         var user = authRepository.createUserEmailPassword(email, password);
-        return signInEmailPassword(email, password);
+        return signInEmailPassword(email, password, user);
     }
 
     @Override

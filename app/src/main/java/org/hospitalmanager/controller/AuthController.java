@@ -45,7 +45,7 @@ public class AuthController {
         String password = formData.get("password");
         HashMap<String, Object> response = new HashMap<>();
         try {
-            SignInInfo signInInfo = authService.signInEmailPassword(email, password);
+            SignInInfo signInInfo = authService.signInEmailPassword(email, password, null);
             response.put("token", signInInfo.getIdToken());
             response.put("refreshToken", signInInfo.getRefreshToken());
             response.put("emailVerified", signInInfo.isEmailVerified());
