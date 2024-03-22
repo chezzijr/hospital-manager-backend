@@ -3,6 +3,7 @@ package org.hospitalmanager.repository;
 import java.util.Map;
 
 import org.hospitalmanager.config.Firebase;
+import org.hospitalmanager.model.RefreshTokenResponsePayload;
 import org.hospitalmanager.model.SignInResponsePayload;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,6 +92,14 @@ public interface AuthRepository {
      * @throws FirebaseAuthException if the user does not exist
      */
     String sendPasswordResetEmail(String email) throws Exception;
+
+    /**
+     * Refresh the token
+     * 
+     * @param refreshToken The refresh token, non-null and non-empty
+     * @return The refresh token response payload
+     */
+    RefreshTokenResponsePayload refreshToken(String refreshToken);
 }
 
 @Repository
@@ -104,6 +113,7 @@ class AuthRepositoryImpl implements AuthRepository {
     private static final String VERIFY_PASSWORD_URL = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=";
     private static final String VERIFY_EMAIL_URL = "https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=";
     private static final String PASSWORD_RESET_URL = "https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=";
+    private static final String REFRESH_TOKEN_URL = "https://securetoken.googleapis.com/v1/token?key=";
 
     @Override
     public UserRecord getUser(String id) throws FirebaseAuthException {
@@ -156,6 +166,7 @@ class AuthRepositoryImpl implements AuthRepository {
                 .post()
                 .uri(VERIFY_EMAIL_URL + apiKey)
                 .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
                 .bodyValue(Map.of("requestType", "VERIFY_EMAIL", "idToken", idToken))
                 .retrieve()
                 .bodyToMono(Map.class)
@@ -173,7 +184,8 @@ class AuthRepositoryImpl implements AuthRepository {
 
     @Override
     public String sendPasswordResetEmail(String email) throws Exception {
-        // Since firebase admin sdk does not have a method to send a password reset email,
+        // Since firebase admin sdk does not have a method to send a password reset
+        // email,
         // we have to use the REST API
         WebClient webClient = WebClient.create();
         // response is an object with field email
@@ -181,10 +193,27 @@ class AuthRepositoryImpl implements AuthRepository {
                 .post()
                 .uri(PASSWORD_RESET_URL + apiKey)
                 .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
                 .bodyValue(Map.of("requestType", "PASSWORD_RESET", "email", email))
                 .retrieve()
                 .bodyToMono(Map.class)
                 .block();
         return resp.get("email").toString();
+    }
+
+    @Override
+    public RefreshTokenResponsePayload refreshToken(String refreshToken) {
+        WebClient webClient = WebClient.create();
+
+        RefreshTokenResponsePayload resp = webClient
+                .post()
+                .uri(REFRESH_TOKEN_URL + apiKey)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(Map.of("grant_type", "refresh_token", "refresh_token", refreshToken))
+                .retrieve()
+                .bodyToMono(RefreshTokenResponsePayload.class)
+                .block();
+
+        return resp;
     }
 }

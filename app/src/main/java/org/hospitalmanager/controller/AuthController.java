@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 
 import java.util.HashMap;
 
+import org.hospitalmanager.model.RefreshTokenResponsePayload;
 import org.hospitalmanager.model.SignInInfo;
 import org.hospitalmanager.service.AuthService;
 
@@ -102,6 +103,20 @@ public class AuthController {
             authService.sendPasswordResetEmail(email);
             HashMap<String, String> response = new HashMap<>();
             response.put("message", "Password reset email sent");
+            return response;
+        } catch (Exception e) {
+            throw new InvalidCredentialsException(e.getMessage());
+        }
+    }
+
+    @PostMapping(value="/refreshToken", consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
+    public HashMap<String, String> refreshToken(@RequestBody HashMap<String, String> formData) {
+        String refreshToken = formData.get("refreshToken");
+        try {
+            RefreshTokenResponsePayload payload = authService.refreshToken(refreshToken);
+            HashMap<String, String> response = new HashMap<>();
+            response.put("token", payload.getIdToken());
+            response.put("refreshToken", payload.getRefreshToken());
             return response;
         } catch (Exception e) {
             throw new InvalidCredentialsException(e.getMessage());

@@ -1,5 +1,6 @@
 package org.hospitalmanager.service;
 
+import org.hospitalmanager.model.RefreshTokenResponsePayload;
 import org.hospitalmanager.model.SignInInfo;
 import org.hospitalmanager.repository.AuthRepository;
 
@@ -50,6 +51,14 @@ public interface AuthService {
      * @throws Exception if the email could not be sent
      */
     public void sendPasswordResetEmail(String email) throws Exception;
+
+    /**
+     * Refresh a token
+     * @param refreshToken The refresh token, non-null and non-empty
+     * @return The refresh token response payload
+     * @throws FirebaseAuthException if the token is invalid
+     */
+    public RefreshTokenResponsePayload refreshToken(String refreshToken) throws FirebaseAuthException;
 }
 
 @Service
@@ -90,5 +99,10 @@ class AuthServiceImpl implements AuthService {
     @Override
     public FirebaseToken verifyToken(String token) throws FirebaseAuthException {
         return authRepository.verifyToken(token);
+    }
+
+    @Override
+    public RefreshTokenResponsePayload refreshToken(String refreshToken) throws FirebaseAuthException {
+        return authRepository.refreshToken(refreshToken);
     }
 }
