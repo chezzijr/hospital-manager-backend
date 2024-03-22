@@ -94,4 +94,17 @@ public class AuthController {
             throw new UnauthorizedException(e.getMessage());
         }
     }
+
+    @PostMapping(value="/resetPassword", consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
+    public HashMap<String, String> resetPassword(@RequestBody HashMap<String, String> formData) {
+        String email = formData.get("email");
+        try {
+            authService.sendPasswordResetEmail(email);
+            HashMap<String, String> response = new HashMap<>();
+            response.put("message", "Password reset email sent");
+            return response;
+        } catch (Exception e) {
+            throw new InvalidCredentialsException(e.getMessage());
+        }
+    }
 }
