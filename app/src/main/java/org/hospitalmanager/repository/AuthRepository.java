@@ -16,6 +16,9 @@ import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 import com.google.firebase.auth.UserRecord;
 import com.google.firebase.auth.UserRecord.UpdateRequest;
+
+import jakarta.annotation.PostConstruct;
+
 import com.google.firebase.auth.UserRecord.CreateRequest;
 
 public interface AuthRepository {
@@ -107,6 +110,8 @@ class AuthRepositoryImpl implements AuthRepository {
     @Autowired
     private Firebase firebase;
 
+    private WebClient webClient;
+
     @Value("${firebase.web.api.key}")
     private String apiKey;
 
@@ -114,6 +119,15 @@ class AuthRepositoryImpl implements AuthRepository {
     private static final String VERIFY_EMAIL_URL = "https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=";
     private static final String PASSWORD_RESET_URL = "https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=";
     private static final String REFRESH_TOKEN_URL = "https://securetoken.googleapis.com/v1/token?key=";
+
+    @PostConstruct
+    public void init() {
+        // build the web client
+        webClient = WebClient.builder()
+                .defaultHeader("Content-Type", "application/json")
+                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(16 * 1024 * 1024))
+                .build();
+    }
 
     @Override
     public UserRecord getUser(String id) throws FirebaseAuthException {
@@ -124,7 +138,6 @@ class AuthRepositoryImpl implements AuthRepository {
     public SignInResponsePayload signInUserEmailPassword(String email, String password) throws Exception {
         // Since firebase admin sdk does not have a method to verify a user's password,
         // we have to use the REST API
-        WebClient webClient = WebClient.create();
         SignInResponsePayload resp = webClient
                 .post()
                 .uri(SIGNIN_PASSWORD_URL + apiKey)
@@ -160,13 +173,10 @@ class AuthRepositoryImpl implements AuthRepository {
     public String sendEmailVerification(String idToken) throws Exception {
         // Since firebase admin sdk does not have a method to send an email verification
         // link, we have to use the REST API
-        WebClient webClient = WebClient.create();
         // response is an object with field email
         var resp = webClient
                 .post()
                 .uri(VERIFY_EMAIL_URL + apiKey)
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
                 .bodyValue(Map.of("requestType", "VERIFY_EMAIL", "idToken", idToken))
                 .retrieve()
                 .bodyToMono(Map.class)
@@ -187,13 +197,10 @@ class AuthRepositoryImpl implements AuthRepository {
         // Since firebase admin sdk does not have a method to send a password reset
         // email,
         // we have to use the REST API
-        WebClient webClient = WebClient.create();
         // response is an object with field email
         var resp = webClient
                 .post()
                 .uri(PASSWORD_RESET_URL + apiKey)
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
                 .bodyValue(Map.of("requestType", "PASSWORD_RESET", "email", email))
                 .retrieve()
                 .bodyToMono(Map.class)
@@ -203,12 +210,9 @@ class AuthRepositoryImpl implements AuthRepository {
 
     @Override
     public RefreshTokenResponsePayload refreshToken(String refreshToken) {
-        WebClient webClient = WebClient.create();
-
         RefreshTokenResponsePayload resp = webClient
                 .post()
                 .uri(REFRESH_TOKEN_URL + apiKey)
-                .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(Map.of("grant_type", "refresh_token", "refresh_token", refreshToken))
                 .retrieve()
                 .bodyToMono(RefreshTokenResponsePayload.class)
