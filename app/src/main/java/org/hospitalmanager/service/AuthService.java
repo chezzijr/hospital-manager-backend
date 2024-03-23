@@ -2,10 +2,15 @@ package org.hospitalmanager.service;
 
 import org.hospitalmanager.dto.RefreshTokenResponsePayload;
 import org.hospitalmanager.dto.SignInInfo;
+import org.hospitalmanager.service.AuthServiceException;
+import org.hospitalmanager.repository.AuthRepositoryException.*;
 import org.hospitalmanager.repository.AuthRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
@@ -21,7 +26,7 @@ public interface AuthService {
      * @return The sign-in response payload
      * @throws Exception if the user does not exist
      */
-    public SignInInfo signInEmailPassword(String email, String password, @Nullable UserRecord user) throws Exception;
+    public SignInInfo signInEmailPassword(String email, String password, @Nullable UserRecord user) throws AuthServiceException;
 
     /**
      * Sign up a user using their email and password
@@ -31,14 +36,14 @@ public interface AuthService {
      * @return The sign-in response payload
      * @throws Exception if the user does not exist
      */
-    public SignInInfo signUpEmailPassword(String email, String password) throws Exception;
+    public SignInInfo signUpEmailPassword(String email, String password) throws AuthServiceException;
 
     /**
      * Send a verification email to the user
      * @param user The user to send the email to, non-null
      * @throws Exception if the email could not be sent
      */
-    public void sendVerificationEmail(String idToken) throws Exception;
+    public void sendVerificationEmail(String idToken) throws AuthServiceException;
 
     /**
      * Verify a token
@@ -47,14 +52,14 @@ public interface AuthService {
      * @return true if the token is valid, false otherwise
      * @throws FirebaseAuthException if the token is invalid
      */
-    public FirebaseToken verifyToken(String token) throws FirebaseAuthException;
+    public FirebaseToken verifyToken(String token) throws AuthServiceException;
 
     /**
      * Send a password reset email to the user
      * @param email The user's email, non-null and non-empty
      * @throws Exception if the email could not be sent
      */
-    public void sendPasswordResetEmail(String email) throws Exception;
+    public void sendPasswordResetEmail(String email) throws AuthServiceException;
 
     /**
      * Refresh a token
@@ -62,53 +67,81 @@ public interface AuthService {
      * @return The refresh token response payload
      * @throws FirebaseAuthException if the token is invalid
      */
-    public RefreshTokenResponsePayload refreshToken(String refreshToken) throws FirebaseAuthException;
+    public RefreshTokenResponsePayload refreshToken(String refreshToken) throws AuthServiceException;
 }
 
 @Service
 class AuthServiceImpl implements AuthService {
+
+    Logger logger = LoggerFactory.getLogger(AuthServiceImpl.class);
+
     @Autowired
     private AuthRepository authRepository;
 
     @Override
-    public SignInInfo signInEmailPassword(String email, String password, @Nullable UserRecord user) throws Exception {
-        var payload = authRepository.signInUserEmailPassword(email, password);
-        if (user == null) {
-            user = authRepository.getUser(payload.getLocalId());
+    public SignInInfo signInEmailPassword(String email, String password, @Nullable UserRecord user) throws AuthServiceException {
+        try {
+            var payload = authRepository.signInUserEmailPassword(email, password);
+            if (user == null) {
+                user = authRepository.getUser(payload.getLocalId());
+            }
+
+            String idToken = payload.getIdToken();
+            if (!user.isEmailVerified()) {
+                sendVerificationEmail(idToken);
+            }
+
+            return new SignInInfo(idToken, payload.getRefreshToken(), user.isEmailVerified());
+        } catch (UserNotFoundException e)  {
+            throw new AuthServiceException("USER_NOT_FOUND", e);
         }
+    }
 
-        String idToken = payload.getIdToken();
-        if (!user.isEmailVerified()) {
-            sendVerificationEmail(idToken);
+    @Override
+    public SignInInfo signUpEmailPassword(String email, String password) throws AuthServiceException {
+        try {
+            var user = authRepository.createUserEmailPassword(email, password);
+            return signInEmailPassword(email, password, user);
+        } catch (UserAlreadyExistsException e) {
+            throw new AuthServiceException("USER_ALREADY_EXISTS", e);
         }
-
-        return new SignInInfo(idToken, payload.getRefreshToken(), user.isEmailVerified());
     }
 
     @Override
-    public SignInInfo signUpEmailPassword(String email, String password) throws Exception {
-        var user = authRepository.createUserEmailPassword(email, password);
-        return signInEmailPassword(email, password, user);
+    public void sendVerificationEmail(String idToken) throws AuthServiceException {
+        try {
+            authRepository.sendEmailVerification(idToken);
+        } catch (UserNotFoundException e) {
+            logger.warn("Impossible exception thrown: ", e.getClass().getName());
+            throw new AuthServiceException("UNKNOWN_ERROR", e);
+        }
     }
 
     @Override
-    public void sendVerificationEmail(String idToken) throws Exception {
-        authRepository.sendEmailVerification(idToken);
-    }
-
-    @Override
-    public void sendPasswordResetEmail(String email) throws Exception {
+    public void sendPasswordResetEmail(String email) throws AuthServiceException {
         // check if user exists
-        authRepository.sendPasswordResetEmail(email);
+        try {
+            authRepository.getUserByEmail(email);
+        } catch (UserNotFoundException e) {
+            throw new AuthServiceException("USER_NOT_FOUND", e);
+        }
     }
 
     @Override
-    public FirebaseToken verifyToken(String token) throws FirebaseAuthException {
-        return authRepository.verifyToken(token);
+    public FirebaseToken verifyToken(String token) throws AuthServiceException {
+        try {
+            return authRepository.verifyToken(token);
+        } catch (InvalidTokenException e) {
+            throw new AuthServiceException("INVALID_TOKEN", e);
+        }
     }
 
     @Override
-    public RefreshTokenResponsePayload refreshToken(String refreshToken) throws FirebaseAuthException {
-        return authRepository.refreshToken(refreshToken);
+    public RefreshTokenResponsePayload refreshToken(String refreshToken) throws AuthServiceException {
+        try {
+            return authRepository.refreshToken(refreshToken);
+        } catch (InvalidTokenException e) {
+            throw new AuthServiceException("INVALID_TOKEN", e);
+        }
     }
 }

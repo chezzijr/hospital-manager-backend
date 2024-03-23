@@ -5,12 +5,12 @@ import java.util.Map;
 import org.hospitalmanager.config.Firebase;
 import org.hospitalmanager.dto.RefreshTokenResponsePayload;
 import org.hospitalmanager.dto.SignInResponsePayload;
+import org.hospitalmanager.repository.AuthRepositoryException.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.http.MediaType;
 
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
@@ -29,7 +29,16 @@ public interface AuthRepository {
      * @return The user's record
      * @throws FirebaseAuthException if the user does not exist
      */
-    UserRecord getUser(String id) throws FirebaseAuthException;
+    UserRecord getUser(String id) throws UserNotFoundException;
+
+    /**
+     * Get a user by their email
+     * 
+     * @param email The user's email, non-null and non-empty
+     * @return The user's record
+     * @throws FirebaseAuthException if the user does not exist
+     */
+    UserRecord getUserByEmail(String email) throws UserNotFoundException;
 
     /**
      * Sign in a user using their email and password
@@ -39,7 +48,7 @@ public interface AuthRepository {
      * @return The sign-in response payload
      * @throws Exception if the user does not exist
      */
-    SignInResponsePayload signInUserEmailPassword(String email, String password) throws Exception;
+    SignInResponsePayload signInUserEmailPassword(String email, String password) throws UserNotFoundException;
 
     /**
      * Create a new user
@@ -49,16 +58,7 @@ public interface AuthRepository {
      * @return The user's record
      * @throws FirebaseAuthException if the user already exists
      */
-    UserRecord createUserEmailPassword(String email, String password) throws FirebaseAuthException;
-
-    /**
-     * Create a new user via CreateRequest builder
-     * 
-     * @param req The user's request, non-null
-     * @return The user's record
-     * @throws FirebaseAuthException if the user already exists
-     */
-    UserRecord createUser(CreateRequest req) throws FirebaseAuthException;
+    UserRecord createUserEmailPassword(String email, String password) throws UserAlreadyExistsException;
 
     /**
      * Update a user, using UpdateRequest builder
@@ -67,7 +67,7 @@ public interface AuthRepository {
      * @return The user's record
      * @throws FirebaseAuthException if the user does not exist
      */
-    UserRecord updateUser(UpdateRequest req) throws FirebaseAuthException;
+    UserRecord updateUser(UpdateRequest req) throws UserNotFoundException;
 
     /**
      * Generate an email verification link and send it to the user's email
@@ -76,7 +76,7 @@ public interface AuthRepository {
      * @return The email verification link
      * @throws FirebaseAuthException if the user does not exist
      */
-    String sendEmailVerification(String idToken) throws Exception;
+    String sendEmailVerification(String idToken) throws UserNotFoundException;
 
     /**
      * Verify idToken
@@ -85,7 +85,7 @@ public interface AuthRepository {
      * @return The token's payload
      * @throws FirebaseAuthException if the token is invalid
      */
-    FirebaseToken verifyToken(String token) throws FirebaseAuthException;
+    FirebaseToken verifyToken(String token) throws InvalidTokenException;
 
     /**
      * Send a password reset email to the user
@@ -94,7 +94,7 @@ public interface AuthRepository {
      * @return The user's email
      * @throws FirebaseAuthException if the user does not exist
      */
-    String sendPasswordResetEmail(String email) throws Exception;
+    String sendPasswordResetEmail(String email) throws UserNotFoundException;
 
     /**
      * Refresh the token
@@ -102,7 +102,7 @@ public interface AuthRepository {
      * @param refreshToken The refresh token, non-null and non-empty
      * @return The refresh token response payload
      */
-    RefreshTokenResponsePayload refreshToken(String refreshToken);
+    RefreshTokenResponsePayload refreshToken(String refreshToken) throws InvalidTokenException;
 }
 
 @Repository
@@ -130,47 +130,66 @@ class AuthRepositoryImpl implements AuthRepository {
     }
 
     @Override
-    public UserRecord getUser(String id) throws FirebaseAuthException {
-        return firebase.getAuth().getUser(id);
+    public UserRecord getUser(String id) throws UserNotFoundException {
+        try {
+            return firebase.getAuth().getUser(id);
+        } catch (FirebaseAuthException e) {
+            throw new UserNotFoundException(id);
+        }
     }
 
     @Override
-    public SignInResponsePayload signInUserEmailPassword(String email, String password) throws Exception {
+    public UserRecord getUserByEmail(String email) throws UserNotFoundException {
+        try {
+            return firebase.getAuth().getUserByEmail(email);
+        } catch (FirebaseAuthException e) {
+            throw new UserNotFoundException(email);
+        }
+    }
+
+    @Override
+    public SignInResponsePayload signInUserEmailPassword(String email, String password) throws UserNotFoundException {
         // Since firebase admin sdk does not have a method to verify a user's password,
         // we have to use the REST API
-        SignInResponsePayload resp = webClient
-                .post()
-                .uri(SIGNIN_PASSWORD_URL + apiKey)
-                .bodyValue(Map.of("email", email, "password", password, "returnSecureToken", true))
-                .retrieve()
-                .bodyToMono(SignInResponsePayload.class)
-                .block();
-        return resp;
+        try {
+            SignInResponsePayload resp = webClient
+                    .post()
+                    .uri(SIGNIN_PASSWORD_URL + apiKey)
+                    .bodyValue(Map.of("email", email, "password", password, "returnSecureToken", true))
+                    .retrieve()
+                    .bodyToMono(SignInResponsePayload.class)
+                    .block();
+            return resp;
+        } catch (Exception e) {
+            throw new UserNotFoundException(email);
+        }
     }
 
     @Override
-    public UserRecord createUserEmailPassword(String email, String password) throws FirebaseAuthException {
-        CreateRequest req = new CreateRequest()
-                .setEmail(email)
-                .setPassword(password);
-        UserRecord usr = firebase.getAuth().createUser(req);
-        return usr;
+    public UserRecord createUserEmailPassword(String email, String password) throws UserAlreadyExistsException {
+        try {
+            CreateRequest req = new CreateRequest()
+                    .setEmail(email)
+                    .setPassword(password);
+            UserRecord usr = firebase.getAuth().createUser(req);
+            return usr;
+        } catch (FirebaseAuthException e) {
+            throw new UserAlreadyExistsException(email);
+        }
     }
 
     @Override
-    public UserRecord createUser(CreateRequest req) throws FirebaseAuthException {
-        UserRecord usr = firebase.getAuth().createUser(req);
-        return usr;
+    public UserRecord updateUser(UpdateRequest req) throws UserNotFoundException {
+        try {
+            UserRecord usr = firebase.getAuth().updateUser(req);
+            return usr;
+        } catch (FirebaseAuthException e) {
+            throw new UserNotFoundException(req.toString());
+        }
     }
 
     @Override
-    public UserRecord updateUser(UpdateRequest req) throws FirebaseAuthException {
-        UserRecord usr = firebase.getAuth().updateUser(req);
-        return usr;
-    }
-
-    @Override
-    public String sendEmailVerification(String idToken) throws Exception {
+    public String sendEmailVerification(String idToken) throws UserNotFoundException {
         // Since firebase admin sdk does not have a method to send an email verification
         // link, we have to use the REST API
         // response is an object with field email
@@ -187,37 +206,49 @@ class AuthRepositoryImpl implements AuthRepository {
     }
 
     @Override
-    public FirebaseToken verifyToken(String idToken) throws FirebaseAuthException {
-        FirebaseToken token = firebase.getAuth().verifyIdToken(idToken);
-        return token;
+    public FirebaseToken verifyToken(String idToken) throws InvalidTokenException {
+        try {
+            FirebaseToken token = firebase.getAuth().verifyIdToken(idToken);
+            return token;
+        } catch (FirebaseAuthException e) {
+            throw new InvalidTokenException(idToken);
+        }
     }
 
     @Override
-    public String sendPasswordResetEmail(String email) throws Exception {
+    public String sendPasswordResetEmail(String email) throws UserNotFoundException {
         // Since firebase admin sdk does not have a method to send a password reset
         // email,
         // we have to use the REST API
         // response is an object with field email
-        var resp = webClient
-                .post()
-                .uri(PASSWORD_RESET_URL + apiKey)
-                .bodyValue(Map.of("requestType", "PASSWORD_RESET", "email", email))
-                .retrieve()
-                .bodyToMono(Map.class)
-                .block();
-        return resp.get("email").toString();
+        try {
+            var resp = webClient
+                    .post()
+                    .uri(PASSWORD_RESET_URL + apiKey)
+                    .bodyValue(Map.of("requestType", "PASSWORD_RESET", "email", email))
+                    .retrieve()
+                    .bodyToMono(Map.class)
+                    .block();
+            return resp.get("email").toString();
+        } catch (Exception e) {
+            throw new UserNotFoundException(email);
+        }
     }
 
     @Override
-    public RefreshTokenResponsePayload refreshToken(String refreshToken) {
-        RefreshTokenResponsePayload resp = webClient
-                .post()
-                .uri(REFRESH_TOKEN_URL + apiKey)
-                .bodyValue(Map.of("grant_type", "refresh_token", "refresh_token", refreshToken))
-                .retrieve()
-                .bodyToMono(RefreshTokenResponsePayload.class)
-                .block();
+    public RefreshTokenResponsePayload refreshToken(String refreshToken) throws InvalidTokenException {
+        try {
+            RefreshTokenResponsePayload resp = webClient
+                    .post()
+                    .uri(REFRESH_TOKEN_URL + apiKey)
+                    .bodyValue(Map.of("grant_type", "refresh_token", "refresh_token", refreshToken))
+                    .retrieve()
+                    .bodyToMono(RefreshTokenResponsePayload.class)
+                    .block();
 
-        return resp;
+            return resp;
+        } catch (Exception e) {
+            throw new InvalidTokenException(refreshToken);
+        }
     }
 }

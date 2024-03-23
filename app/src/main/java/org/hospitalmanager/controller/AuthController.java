@@ -2,10 +2,13 @@ package org.hospitalmanager.controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+
+import com.google.api.client.auth.oauth2.RefreshTokenRequest;
 
 import org.springframework.util.MultiValueMap;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,21 +20,13 @@ import java.util.HashMap;
 
 import org.hospitalmanager.dto.RefreshTokenResponsePayload;
 import org.hospitalmanager.dto.SignInInfo;
+import org.hospitalmanager.model.RefreshTokenResponse;
+import org.hospitalmanager.model.ResetPasswordRequest;
+import org.hospitalmanager.model.ResetPasswordResponse;
+import org.hospitalmanager.model.SignRequest;
+import org.hospitalmanager.model.SignResponse;
 import org.hospitalmanager.service.AuthService;
-
-@ResponseStatus(code=HttpStatus.UNAUTHORIZED, reason="You are not authorized to access this resource")
-class UnauthorizedException extends RuntimeException {
-    public UnauthorizedException (String message) {
-        super(message);
-    }
-}
-
-@ResponseStatus(code=HttpStatus.BAD_REQUEST, reason="Invalid credentials")
-class InvalidCredentialsException extends RuntimeException {
-    public InvalidCredentialsException (String message) {
-        super(message);
-    }
-}
+import org.hospitalmanager.service.AuthServiceException;
 
 @RestController
 @RequestMapping("/auth")
@@ -40,34 +35,32 @@ public class AuthController {
     private AuthService authService;
 
     @PostMapping(value="/signin", consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
-    public HashMap<String, Object> getUser(@RequestBody HashMap<String, String> formData) {
-        String email = formData.get("email");
-        String password = formData.get("password");
-        HashMap<String, Object> response = new HashMap<>();
+    public ResponseEntity<SignResponse> signInUser(@RequestBody SignRequest req) {
+        if (req.getEmail() == null || req.getPassword() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email and password are required");
+        }
+
         try {
-            SignInInfo signInInfo = authService.signInEmailPassword(email, password, null);
-            response.put("token", signInInfo.getIdToken());
-            response.put("refreshToken", signInInfo.getRefreshToken());
-            response.put("emailVerified", signInInfo.isEmailVerified());
-            return response;
-        } catch (Exception e) {
-            throw new InvalidCredentialsException(e.getMessage());
+            SignInInfo signInInfo = authService.signInEmailPassword(req.getEmail(), req.getPassword(), null);
+            SignResponse resp = new SignResponse(signInInfo.getIdToken(), signInInfo.getRefreshToken(), signInInfo.isEmailVerified());
+            return ResponseEntity.ok(resp);
+        } catch (AuthServiceException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
 
     @PostMapping(value="/signup", consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
-    public HashMap<String, Object> registerUser(@RequestBody HashMap<String, String> formData) {
-        String email = formData.get("email");
-        String password = formData.get("password");
-        HashMap<String, Object> response = new HashMap<>();
+    public ResponseEntity<SignResponse> signUpUser(@RequestBody SignRequest req) {
+        if (req.getEmail() == null || req.getPassword() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email and password are required");
+        }
+
         try {
-            SignInInfo signInInfo = authService.signUpEmailPassword(email, password);
-            response.put("token", signInInfo.getIdToken());
-            response.put("refreshToken", signInInfo.getRefreshToken());
-            response.put("emailVerified", signInInfo.isEmailVerified());
-            return response;
-        } catch (Exception e) {
-            throw new InvalidCredentialsException(e.getMessage());
+            SignInInfo signInInfo = authService.signUpEmailPassword(req.getEmail(), req.getPassword());
+            SignResponse resp = new SignResponse(signInInfo.getIdToken(), signInInfo.getRefreshToken(), signInInfo.isEmailVerified());
+            return ResponseEntity.ok(resp);
+        } catch (AuthServiceException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
 
@@ -82,7 +75,7 @@ public class AuthController {
         // remove "Bearer " from the token by splitting the string
         String[] tokens = authHeader.split(" ");
         if (tokens.length != 2 || !tokens[0].equals("Bearer")) {
-            throw new UnauthorizedException("Invalid token");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
 
         String token = tokens[1].trim(); // prevent some goofy ahh trailing CR LF
@@ -91,35 +84,38 @@ public class AuthController {
         try {
             response.put("email", authService.verifyToken(token).getEmail());
             return response;
-        } catch (Exception e) {
-            throw new UnauthorizedException(e.getMessage());
+        } catch (AuthServiceException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
 
     @PostMapping(value="/resetPassword", consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
-    public HashMap<String, String> resetPassword(@RequestBody HashMap<String, String> formData) {
-        String email = formData.get("email");
+    public ResponseEntity<ResetPasswordResponse> resetPassword(@RequestBody ResetPasswordRequest req) {
+        if (req.getEmail() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email is required");
+        }
+
         try {
-            authService.sendPasswordResetEmail(email);
-            HashMap<String, String> response = new HashMap<>();
-            response.put("message", "Password reset email sent");
-            return response;
-        } catch (Exception e) {
-            throw new InvalidCredentialsException(e.getMessage());
+            authService.sendPasswordResetEmail(req.getEmail());
+            ResetPasswordResponse resp = new ResetPasswordResponse("Password reset email sent");
+            return ResponseEntity.ok(resp);
+        } catch (AuthServiceException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
 
     @PostMapping(value="/refreshToken", consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
-    public HashMap<String, String> refreshToken(@RequestBody HashMap<String, String> formData) {
-        String refreshToken = formData.get("refreshToken");
+    public ResponseEntity<RefreshTokenResponse> refreshToken(@RequestBody RefreshTokenRequest req) {
+        if (req.getRefreshToken() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Refresh token is required");
+        }
+
         try {
-            RefreshTokenResponsePayload payload = authService.refreshToken(refreshToken);
-            HashMap<String, String> response = new HashMap<>();
-            response.put("token", payload.getIdToken());
-            response.put("refreshToken", payload.getRefreshToken());
-            return response;
-        } catch (Exception e) {
-            throw new InvalidCredentialsException(e.getMessage());
+            RefreshTokenResponsePayload payload = authService.refreshToken(req.getRefreshToken());
+            RefreshTokenResponse resp = new RefreshTokenResponse(payload.getIdToken(), payload.getRefreshToken());
+            return ResponseEntity.ok(resp);
+        } catch (AuthServiceException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
 }
