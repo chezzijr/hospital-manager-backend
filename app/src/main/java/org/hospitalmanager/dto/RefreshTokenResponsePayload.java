@@ -1,4 +1,4 @@
-package org.hospitalmanager.model;
+package org.hospitalmanager.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

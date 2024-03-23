@@ -3,8 +3,8 @@ package org.hospitalmanager.repository;
 import java.util.Map;
 
 import org.hospitalmanager.config.Firebase;
-import org.hospitalmanager.model.RefreshTokenResponsePayload;
-import org.hospitalmanager.model.SignInResponsePayload;
+import org.hospitalmanager.dto.RefreshTokenResponsePayload;
+import org.hospitalmanager.dto.SignInResponsePayload;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;

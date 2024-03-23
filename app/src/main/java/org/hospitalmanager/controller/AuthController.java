@@ -15,8 +15,8 @@ import org.springframework.http.HttpStatus;
 
 import java.util.HashMap;
 
-import org.hospitalmanager.model.RefreshTokenResponsePayload;
-import org.hospitalmanager.model.SignInInfo;
+import org.hospitalmanager.dto.RefreshTokenResponsePayload;
+import org.hospitalmanager.dto.SignInInfo;
 import org.hospitalmanager.service.AuthService;
 
 @ResponseStatus(code=HttpStatus.UNAUTHORIZED, reason="You are not authorized to access this resource")

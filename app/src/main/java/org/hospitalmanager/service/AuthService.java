@@ -1,7 +1,7 @@
 package org.hospitalmanager.service;
 
-import org.hospitalmanager.model.RefreshTokenResponsePayload;
-import org.hospitalmanager.model.SignInInfo;
+import org.hospitalmanager.dto.RefreshTokenResponsePayload;
+import org.hospitalmanager.dto.SignInInfo;
 import org.hospitalmanager.repository.AuthRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;

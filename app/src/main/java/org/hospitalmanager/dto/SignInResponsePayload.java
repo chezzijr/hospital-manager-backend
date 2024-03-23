@@ -1,4 +1,4 @@
-package org.hospitalmanager.model;
+package org.hospitalmanager.dto;
 
 /**
  * The response payload for a sign-in request when use Firebase REST
