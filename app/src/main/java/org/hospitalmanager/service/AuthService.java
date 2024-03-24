@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 import com.google.firebase.auth.UserRecord;
+import com.google.firebase.auth.UserRecord.UpdateRequest;
 import com.google.firebase.database.annotations.Nullable;
 
 public interface AuthService {
@@ -68,6 +69,8 @@ public interface AuthService {
      * @throws FirebaseAuthException if the token is invalid
      */
     public RefreshTokenResponsePayload refreshToken(String refreshToken) throws AuthServiceException;
+
+    public UserRecord updateUserPassword(String idToken, String password) throws AuthServiceException;
 }
 
 @Service
@@ -142,6 +145,18 @@ class AuthServiceImpl implements AuthService {
             return authRepository.refreshToken(refreshToken);
         } catch (InvalidTokenException e) {
             throw new AuthServiceException("INVALID_TOKEN", e);
+        }
+    }
+
+    @Override
+    public UserRecord updateUserPassword(String idToken, String password) throws AuthServiceException {
+        FirebaseToken token = verifyToken(idToken);
+        UpdateRequest req = new UpdateRequest(token.getUid()).setPassword(password);
+        try {
+            return authRepository.updateUser(req);
+        } catch (UserNotFoundException e) {
+            logger.warn("Impossible exception thrown: ", e.getClass().getName());
+            throw new AuthServiceException("USER_NOT_FOUND", e);
         }
     }
 }

@@ -20,6 +20,7 @@ import org.hospitalmanager.dto.RefreshTokenResponsePayload;
 import org.hospitalmanager.dto.SignInInfo;
 import org.hospitalmanager.model.RefreshToken;
 import org.hospitalmanager.model.ResetPassword;
+import org.hospitalmanager.model.UpdatePassword;
 import org.hospitalmanager.model.Auth;
 import org.hospitalmanager.service.AuthService;
 import org.hospitalmanager.service.AuthServiceException;
@@ -64,8 +65,6 @@ public class AuthController {
     // for testing only
     @GetMapping(value="/user", produces=MediaType.APPLICATION_JSON_VALUE)
     public HashMap<String, String> getUser(@RequestHeader MultiValueMap<String, String> headers) {
-        System.out.println(headers);
-
         String authHeader = headers.getFirst("authorization");
 
         // remove "Bearer " from the token by splitting the string
@@ -109,6 +108,31 @@ public class AuthController {
         try {
             RefreshTokenResponsePayload payload = authService.refreshToken(req.getRefreshToken());
             RefreshToken.Response resp = new RefreshToken.Response(payload.getIdToken(), payload.getRefreshToken());
+            return ResponseEntity.ok(resp);
+        } catch (AuthServiceException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
+
+    @PostMapping(value="/updatePassword", consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UpdatePassword.Response> updatePassword(@RequestHeader MultiValueMap<String, String> headers, @RequestBody UpdatePassword.Request req) {
+        String authHeader = headers.getFirst("authorization");
+
+        // remove "Bearer " from the token by splitting the string
+        String[] tokens = authHeader.split(" ");
+        if (tokens.length != 2 || !tokens[0].equals("Bearer")) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        }
+
+        String token = tokens[1].trim(); // prevent some goofy ahh trailing CR LF
+
+        if (req.getNewPassword() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password is required");
+        }
+
+        try {
+            authService.updateUserPassword(token, req.getNewPassword());
+            UpdatePassword.Response resp = new UpdatePassword.Response("PASSWORD_UPDATED");
             return ResponseEntity.ok(resp);
         } catch (AuthServiceException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
