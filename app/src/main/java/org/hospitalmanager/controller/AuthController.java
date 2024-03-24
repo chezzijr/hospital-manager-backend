@@ -61,29 +61,6 @@ public class AuthController {
         }
     }
 
-    // get user info, using token in header Authorization
-    // for testing only
-    @GetMapping(value="/user", produces=MediaType.APPLICATION_JSON_VALUE)
-    public HashMap<String, String> getUser(@RequestHeader MultiValueMap<String, String> headers) {
-        String authHeader = headers.getFirst("authorization");
-
-        // remove "Bearer " from the token by splitting the string
-        String[] tokens = authHeader.split(" ");
-        if (tokens.length != 2 || !tokens[0].equals("Bearer")) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
-        }
-
-        String token = tokens[1].trim(); // prevent some goofy ahh trailing CR LF
-
-        HashMap<String, String> response = new HashMap<String, String>();
-        try {
-            response.put("email", authService.verifyToken(token).getEmail());
-            return response;
-        } catch (AuthServiceException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        }
-    }
-
     @PostMapping(value="/resetPassword", consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResetPassword.Response> resetPassword(@RequestBody ResetPassword.Request req) {
         if (req.getEmail() == null) {
