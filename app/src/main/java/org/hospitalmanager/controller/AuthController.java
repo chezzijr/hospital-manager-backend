@@ -4,8 +4,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.google.api.client.auth.oauth2.RefreshTokenRequest;
-
 import org.springframework.util.MultiValueMap;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,11 +18,9 @@ import java.util.HashMap;
 
 import org.hospitalmanager.dto.RefreshTokenResponsePayload;
 import org.hospitalmanager.dto.SignInInfo;
-import org.hospitalmanager.model.RefreshTokenResponse;
-import org.hospitalmanager.model.ResetPasswordRequest;
-import org.hospitalmanager.model.ResetPasswordResponse;
-import org.hospitalmanager.model.SignRequest;
-import org.hospitalmanager.model.SignResponse;
+import org.hospitalmanager.model.RefreshToken;
+import org.hospitalmanager.model.ResetPassword;
+import org.hospitalmanager.model.Auth;
 import org.hospitalmanager.service.AuthService;
 import org.hospitalmanager.service.AuthServiceException;
 
@@ -35,14 +31,14 @@ public class AuthController {
     private AuthService authService;
 
     @PostMapping(value="/signin", consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<SignResponse> signInUser(@RequestBody SignRequest req) {
+    public ResponseEntity<Auth.Response> signInUser(@RequestBody Auth.Request req) {
         if (req.getEmail() == null || req.getPassword() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email and password are required");
         }
 
         try {
             SignInInfo signInInfo = authService.signInEmailPassword(req.getEmail(), req.getPassword(), null);
-            SignResponse resp = new SignResponse(signInInfo.getIdToken(), signInInfo.getRefreshToken(), signInInfo.isEmailVerified());
+            Auth.Response resp = new Auth.Response(signInInfo.getIdToken(), signInInfo.getRefreshToken(), signInInfo.isEmailVerified());
             return ResponseEntity.ok(resp);
         } catch (AuthServiceException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
@@ -50,14 +46,14 @@ public class AuthController {
     }
 
     @PostMapping(value="/signup", consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<SignResponse> signUpUser(@RequestBody SignRequest req) {
+    public ResponseEntity<Auth.Response> signUpUser(@RequestBody Auth.Request req) {
         if (req.getEmail() == null || req.getPassword() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email and password are required");
         }
 
         try {
             SignInInfo signInInfo = authService.signUpEmailPassword(req.getEmail(), req.getPassword());
-            SignResponse resp = new SignResponse(signInInfo.getIdToken(), signInInfo.getRefreshToken(), signInInfo.isEmailVerified());
+            Auth.Response resp = new Auth.Response(signInInfo.getIdToken(), signInInfo.getRefreshToken(), signInInfo.isEmailVerified());
             return ResponseEntity.ok(resp);
         } catch (AuthServiceException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
@@ -90,14 +86,14 @@ public class AuthController {
     }
 
     @PostMapping(value="/resetPassword", consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ResetPasswordResponse> resetPassword(@RequestBody ResetPasswordRequest req) {
+    public ResponseEntity<ResetPassword.Response> resetPassword(@RequestBody ResetPassword.Request req) {
         if (req.getEmail() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email is required");
         }
 
         try {
             authService.sendPasswordResetEmail(req.getEmail());
-            ResetPasswordResponse resp = new ResetPasswordResponse("Password reset email sent");
+            ResetPassword.Response resp = new ResetPassword.Response("Password reset email sent");
             return ResponseEntity.ok(resp);
         } catch (AuthServiceException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
@@ -105,14 +101,14 @@ public class AuthController {
     }
 
     @PostMapping(value="/refreshToken", consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<RefreshTokenResponse> refreshToken(@RequestBody RefreshTokenRequest req) {
+    public ResponseEntity<RefreshToken.Response> refreshToken(@RequestBody RefreshToken.Request req) {
         if (req.getRefreshToken() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Refresh token is required");
         }
 
         try {
             RefreshTokenResponsePayload payload = authService.refreshToken(req.getRefreshToken());
-            RefreshTokenResponse resp = new RefreshTokenResponse(payload.getIdToken(), payload.getRefreshToken());
+            RefreshToken.Response resp = new RefreshToken.Response(payload.getIdToken(), payload.getRefreshToken());
             return ResponseEntity.ok(resp);
         } catch (AuthServiceException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
