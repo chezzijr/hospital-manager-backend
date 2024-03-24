@@ -1,6 +1,7 @@
 package org.hospitalmanager.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -12,13 +13,8 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.auth.FirebaseAuth;
 
-public interface Firebase {
-    FirebaseApp getApp();
-    FirebaseAuth getAuth();
-}
-
 @Configuration
-class FirebaseConfig implements Firebase {
+public class FirebaseConfiguration {
     @Autowired
     private ResourceLoader resourceLoader;
 
@@ -31,12 +27,12 @@ class FirebaseConfig implements Firebase {
         FirebaseApp.initializeApp(options);
     }
 
-    @Override
+    @Bean
     public FirebaseApp getApp() {
         return FirebaseApp.getInstance();
     }
 
-    @Override
+    @Bean
     public FirebaseAuth getAuth() {
         return FirebaseAuth.getInstance(getApp());
     }

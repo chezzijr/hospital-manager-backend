@@ -2,7 +2,6 @@ package org.hospitalmanager.repository;
 
 import java.util.Map;
 
-import org.hospitalmanager.config.Firebase;
 import org.hospitalmanager.dto.RefreshTokenResponsePayload;
 import org.hospitalmanager.dto.SignInResponsePayload;
 import org.hospitalmanager.repository.AuthRepositoryException.*;
@@ -12,12 +11,11 @@ import org.springframework.stereotype.Repository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 import com.google.firebase.auth.UserRecord;
 import com.google.firebase.auth.UserRecord.UpdateRequest;
-
-import jakarta.annotation.PostConstruct;
 
 import com.google.firebase.auth.UserRecord.CreateRequest;
 
@@ -108,8 +106,9 @@ public interface AuthRepository {
 @Repository
 class AuthRepositoryImpl implements AuthRepository {
     @Autowired
-    private Firebase firebase;
+    private FirebaseAuth firebaseAuth;
 
+    @Autowired
     private WebClient webClient;
 
     @Value("${firebase.web.api.key}")
@@ -120,19 +119,10 @@ class AuthRepositoryImpl implements AuthRepository {
     private static final String PASSWORD_RESET_URL = "https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=";
     private static final String REFRESH_TOKEN_URL = "https://securetoken.googleapis.com/v1/token?key=";
 
-    @PostConstruct
-    public void init() {
-        // build the web client
-        webClient = WebClient.builder()
-                .defaultHeader("Content-Type", "application/json")
-                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(16 * 1024 * 1024))
-                .build();
-    }
-
     @Override
     public UserRecord getUser(String id) throws UserNotFoundException {
         try {
-            return firebase.getAuth().getUser(id);
+            return firebaseAuth.getUser(id);
         } catch (FirebaseAuthException e) {
             throw new UserNotFoundException(id);
         }
@@ -141,7 +131,7 @@ class AuthRepositoryImpl implements AuthRepository {
     @Override
     public UserRecord getUserByEmail(String email) throws UserNotFoundException {
         try {
-            return firebase.getAuth().getUserByEmail(email);
+            return firebaseAuth.getUserByEmail(email);
         } catch (FirebaseAuthException e) {
             throw new UserNotFoundException(email);
         }
@@ -171,7 +161,7 @@ class AuthRepositoryImpl implements AuthRepository {
             CreateRequest req = new CreateRequest()
                     .setEmail(email)
                     .setPassword(password);
-            UserRecord usr = firebase.getAuth().createUser(req);
+            UserRecord usr = firebaseAuth.createUser(req);
             return usr;
         } catch (FirebaseAuthException e) {
             throw new UserAlreadyExistsException(email);
@@ -181,7 +171,7 @@ class AuthRepositoryImpl implements AuthRepository {
     @Override
     public UserRecord updateUser(UpdateRequest req) throws UserNotFoundException {
         try {
-            UserRecord usr = firebase.getAuth().updateUser(req);
+            UserRecord usr = firebaseAuth.updateUser(req);
             return usr;
         } catch (FirebaseAuthException e) {
             throw new UserNotFoundException(req.toString());
@@ -208,7 +198,7 @@ class AuthRepositoryImpl implements AuthRepository {
     @Override
     public FirebaseToken verifyToken(String idToken) throws InvalidTokenException {
         try {
-            FirebaseToken token = firebase.getAuth().verifyIdToken(idToken);
+            FirebaseToken token = firebaseAuth.verifyIdToken(idToken);
             return token;
         } catch (FirebaseAuthException e) {
             throw new InvalidTokenException(idToken);
