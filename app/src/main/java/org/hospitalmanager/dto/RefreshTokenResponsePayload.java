@@ -3,6 +3,13 @@ package org.hospitalmanager.dto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * The payload of a refresh token response
+ * Firebase changed the API response, instead of camelCase, it is now snake_case
+ * But they did not update the documentation
+ * So we have to manually map the response to the object
+ * The other responses are still in camelCase
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class RefreshTokenResponsePayload {
     @JsonProperty("access_token")
