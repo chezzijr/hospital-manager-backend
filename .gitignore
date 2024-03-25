@@ -5,6 +5,6 @@
 build
 
 firebase-sdk.json
-
+secrets.properties
 .*
 !/.gitignore*/
