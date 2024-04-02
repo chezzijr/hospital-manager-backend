@@ -1,18 +1,28 @@
 package org.hospitalmanager.model;
 
-public class Doctor {
+import java.util.Date;
 
-    private String doctorId;
+public class Doctor extends User {
+
     private String name;
     private String specialization;
     private String qualification;
     private Integer yearOfExperience;
     private String phoneNumber;
-    private String email;
     private Integer workingHours;
+    private String gender;
+    private Date dateOfBirth;
 
-    public String getDoctorId() {
-        return this.doctorId;
+    public Doctor(String id, String email, Role role, String password, String name, String specialization, String qualification, Integer yearOfExperience, String phoneNumber, Integer workingHours, String gender, Date dateOfBirth) {
+        super(id, email, role, password);
+        this.name = name;
+        this.specialization = specialization;
+        this.qualification = qualification;
+        this.yearOfExperience = yearOfExperience;
+        this.phoneNumber = phoneNumber;
+        this.workingHours = workingHours;
+        this.gender = gender;
+        this.dateOfBirth = dateOfBirth;
     }
 
     public String getName() {
@@ -21,10 +31,6 @@ public class Doctor {
 
     public String getSpecialization() {
         return this.specialization;
-    }
-
-    public String getEmail() {
-        return this.email;
     }
 
     public String getQualification() {
@@ -43,12 +49,12 @@ public class Doctor {
         return this.workingHours;
     }
 
-    public void setDoctorId(String doctorId) {
-        this.doctorId = doctorId;
+    public String getGender() {
+        return this.gender;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public Date getDateOfBirth() {
+        return this.dateOfBirth;
     }
 
     public void setName(String name) {
@@ -73,6 +79,14 @@ public class Doctor {
 
     public void setYearOfExperience(Integer yearOfExperience) {
         this.yearOfExperience = yearOfExperience;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public void setDateOfBirth(Date dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
     }
 }
 
