@@ -17,10 +17,10 @@ import org.springframework.http.HttpStatus;
 
 import org.hospitalmanager.dto.RefreshTokenResponsePayload;
 import org.hospitalmanager.dto.SignInInfo;
+import org.hospitalmanager.dto.Auth;
 import org.hospitalmanager.model.RefreshToken;
 import org.hospitalmanager.model.ResetPassword;
 import org.hospitalmanager.model.UpdatePassword;
-import org.hospitalmanager.model.Auth;
 import org.hospitalmanager.service.AuthService;
 import org.hospitalmanager.service.AuthServiceException;
 
