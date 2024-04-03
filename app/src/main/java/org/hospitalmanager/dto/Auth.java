@@ -1,7 +1,9 @@
-package org.hospitalmanager.model;
+package org.hospitalmanager.dto;
+
+import org.hospitalmanager.model.User.Role;
 
 public class Auth {
-    public static class Request {
+    public static class SigninRequest {
         private String email;
         private String password;
 
@@ -11,6 +13,24 @@ public class Auth {
 
         public String getPassword() {
             return password;
+        }
+    }
+
+    public static class SignupRequest {
+        private String email;
+        private String password;
+        private Role role;
+
+        public String getEmail() {
+            return email;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public Role getRole() {
+            return role;
         }
     }
 
