@@ -5,6 +5,7 @@ import java.util.Map;
 import org.hospitalmanager.dto.RefreshTokenResponsePayload;
 import org.hospitalmanager.dto.SignInResponsePayload;
 import org.hospitalmanager.repository.AuthRepositoryException.*;
+import org.hospitalmanager.model.User.Role;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -56,7 +57,7 @@ public interface AuthRepository {
      * @return The user's record
      * @throws FirebaseAuthException if the user already exists
      */
-    UserRecord createUserEmailPassword(String email, String password) throws UserAlreadyExistsException;
+    UserRecord createUserEmailPassword(String email, String password, Role role) throws UserAlreadyExistsException;
 
     /**
      * Update a user, using UpdateRequest builder
@@ -156,11 +157,12 @@ class AuthRepositoryImpl implements AuthRepository {
     }
 
     @Override
-    public UserRecord createUserEmailPassword(String email, String password) throws UserAlreadyExistsException {
+    public UserRecord createUserEmailPassword(String email, String password, Role role) throws UserAlreadyExistsException {
         try {
             CreateRequest req = new CreateRequest()
                     .setEmail(email)
-                    .setPassword(password);
+                    .setPassword(password)
+                    .setDisplayName(role.name());
             UserRecord usr = firebaseAuth.createUser(req);
             return usr;
         } catch (FirebaseAuthException e) {
