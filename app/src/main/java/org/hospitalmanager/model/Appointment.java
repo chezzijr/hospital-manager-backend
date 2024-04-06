@@ -1,5 +1,7 @@
 package org.hospitalmanager.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.util.Date;
 
 public class Appointment {
@@ -60,35 +62,4 @@ public class Appointment {
         return dateCreated;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public void setAppointmentDate(Date appointmentDate) {
-        this.appointmentDate = appointmentDate;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    public void setDateCreated(Date dateCreated) {
-        this.dateCreated = dateCreated;
-    }
-
-    public void setDoctorId(String doctorId) {
-        this.doctorId = doctorId;
-    }
-
-    public void setLocation(Location location) {
-        this.location = location;
-    }
-
-    public void setPatientId(String patientId) {
-        this.patientId = patientId;
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
-    }
 }
