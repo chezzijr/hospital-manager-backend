@@ -1,10 +1,6 @@
 package org.hospitalmanager.model;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
-
-import static org.hospitalmanager.model.User.Role.PATIENT;
 
 public class Patient extends User {
     private String gender;

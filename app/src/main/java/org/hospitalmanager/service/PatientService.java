@@ -9,11 +9,11 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
 public interface PatientService {
-    public Patient getPatientById(String patientId) throws ExecutionException, InterruptedException;
+    Patient getPatientById(String patientId) throws ExecutionException, InterruptedException;
 
-    public ArrayList<Patient> getAllPatient() throws ExecutionException, InterruptedException;
+    ArrayList<Patient> getAllPatient() throws ExecutionException, InterruptedException;
 
-    public boolean createNewPatient(Patient patient);
+    boolean createNewPatient(Patient patient);
 }
 
 @Service
