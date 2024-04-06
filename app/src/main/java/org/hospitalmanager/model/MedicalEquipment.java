@@ -1,8 +1,10 @@
 package org.hospitalmanager.model;
 
 import com.google.cloud.firestore.annotation.DocumentId;
+
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.UUID;
+import java.util.List;
 
 /**
  * Represents a medical equipment in the hospital.
@@ -15,7 +17,11 @@ public class MedicalEquipment {
     static public class Usage {
         private Date startDate;
         private Date endDate;
+        // The faculty member who used the equipment
         private String assignedTo;
+
+        public Usage() {
+        }
 
         public Usage(Date startDate, Date endDate, String assignedTo) {
             this.startDate = startDate;
@@ -40,18 +46,25 @@ public class MedicalEquipment {
     private String id;
     private String name;
     private boolean available;
-    private String assignedTo;
-    private Date lastMaintenanceDate;
-    private Usage[] usageHistory;
+    private Date latestUsageDate;
+    private Date latestMaintenanceDate;
+    private String isBeingUsedBy;
+    // The date when the equipment was imported to the hospital
+    private Date importedDate;
+    private List<Usage> usageHistory;
+
 
     public MedicalEquipment() {
     }
 
-    public MedicalEquipment(String name, boolean available, String assignedTo, Date lastMaintenanceDate, int usageCount) {
+    public MedicalEquipment(String name, Date lastMaintenanceDate) {
         this.name = name;
-        this.available = available;
-        this.assignedTo = assignedTo;
-        this.lastMaintenanceDate = lastMaintenanceDate;
+        this.available = true;
+        this.latestMaintenanceDate = lastMaintenanceDate;
+        this.latestUsageDate = null;
+        this.isBeingUsedBy = null;
+        this.importedDate = new Date();
+        this.usageHistory = new ArrayList<>();
     }
 
     public String getId() {
@@ -66,15 +79,23 @@ public class MedicalEquipment {
         return available;
     }
 
-    public String getAssignedTo() {
-        return assignedTo;
+    public Date getLatestUsageDate() {
+        return latestUsageDate;
     }
 
-    public Date getLastMaintenanceDate() {
-        return lastMaintenanceDate;
+    public String getIsBeingUsedBy() {
+        return isBeingUsedBy;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public Date getLatestMaintenanceDate() {
+        return latestMaintenanceDate;
+    }
+
+    public Date getImportedDate() {
+        return importedDate;
+    }
+
+    public List<Usage> getUsageHistory() {
+        return usageHistory;
     }
 }

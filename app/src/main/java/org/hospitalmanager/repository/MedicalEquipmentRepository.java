@@ -1,6 +1,7 @@
 package org.hospitalmanager.repository;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.hospitalmanager.model.MedicalEquipment;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +31,9 @@ public interface MedicalEquipmentRepository {
      */
     public String addMedicalEquipment(MedicalEquipment me) throws Exception;
     public MedicalEquipment getMedicalEquipment(String id) throws Exception;
-    public MedicalEquipment[] getMedicalEquipmentList() throws Exception;
+    public List<MedicalEquipment> getMedicalEquipmentList() throws Exception;
+    public void updateFieldObject(String id, String field, Object value, Object... moreFieldsAndValues) throws Exception;
+    public void deleteMedicalEquipment(String id) throws Exception;
 }
 
 @Repository
@@ -55,9 +58,7 @@ class MedicalEquipmentRepositoryImpl implements MedicalEquipmentRepository {
         DocumentReference docRef = collRef
             .document(id);
         ApiFuture<DocumentSnapshot> future = docRef.get();
-        System.out.println("Getting Medical Equipment");
         DocumentSnapshot doc = future.get();
-        System.out.println("Got Medical Equipment");
         if (doc.exists()) {
             return doc.toObject(MedicalEquipment.class);
         } else {
@@ -66,7 +67,7 @@ class MedicalEquipmentRepositoryImpl implements MedicalEquipmentRepository {
     }
 
     @Override
-    public MedicalEquipment[] getMedicalEquipmentList() throws Exception {
+    public List<MedicalEquipment> getMedicalEquipmentList() throws Exception {
         ApiFuture<QuerySnapshot> future = collRef.get();
         QuerySnapshot doc = future.get();
         ArrayList<MedicalEquipment> meList = Lists.newArrayList();
@@ -75,7 +76,7 @@ class MedicalEquipmentRepositoryImpl implements MedicalEquipmentRepository {
                 meList.add(d.toObject(MedicalEquipment.class));
             });
         }
-        return meList.toArray(new MedicalEquipment[0]);
+        return meList;
     }
 
     @Override
@@ -88,14 +89,14 @@ class MedicalEquipmentRepositoryImpl implements MedicalEquipmentRepository {
         return newDoc.getId();
     }
 
-    public void updateMedicalEquipment(MedicalEquipment me) throws Exception {
-        DocumentReference docRef = collRef.document(me.getId());
-        ApiFuture<WriteResult> future = docRef.set(me, SetOptions.merge());
-        future.addListener(() -> {
-            logger.info("Medical Equipment updated: " + me.getId());
-        }, MoreExecutors.directExecutor());
+    @Override
+    public void updateFieldObject(String id, String field, Object value, Object... moreFieldsAndValues) throws Exception {
+        DocumentReference docRef = collRef.document(id);
+        ApiFuture<WriteResult> future = docRef.update(field, value, moreFieldsAndValues);
+        future.get();
     }
 
+    @Override
     public void deleteMedicalEquipment(String id) throws Exception {
         DocumentReference docRef = collRef.document(id);
         ApiFuture<WriteResult> future = docRef.delete();
