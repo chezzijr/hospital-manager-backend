@@ -57,36 +57,5 @@ public class Doctor extends User {
         return this.dateOfBirth;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    public void setQualification(String qualification) {
-        this.qualification = qualification;
-    }
-
-    public void setSpecialization(String specialization) {
-        this.specialization = specialization;
-    }
-
-    public void setWorkingHours(Integer workingHours) {
-        this.workingHours = workingHours;
-    }
-
-    public void setYearOfExperience(Integer yearOfExperience) {
-        this.yearOfExperience = yearOfExperience;
-    }
-
-    public void setGender(String gender) {
-        this.gender = gender;
-    }
-
-    public void setDateOfBirth(Date dateOfBirth) {
-        this.dateOfBirth = dateOfBirth;
-    }
 }
 

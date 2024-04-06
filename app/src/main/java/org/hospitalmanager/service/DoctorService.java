@@ -10,11 +10,12 @@ import java.util.concurrent.ExecutionException;
 
 public interface DoctorService {
 
-    public Doctor getDoctorById(String doctorId) throws ExecutionException, InterruptedException;
+    Doctor getDoctorById(String doctorId) throws ExecutionException, InterruptedException;
 
-    public ArrayList<Doctor> getAllDoctor() throws ExecutionException, InterruptedException;
+    ArrayList<Doctor> getAllDoctor() throws ExecutionException, InterruptedException;
 
-    public boolean createNewDoctor(Doctor doctor);
+    boolean createNewDoctor(Doctor doctor);
+
 }
 
 @Service
@@ -39,4 +40,5 @@ class DoctorServiceImpl implements DoctorService {
 
         return true;
     }
+
 }

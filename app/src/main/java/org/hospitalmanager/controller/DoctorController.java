@@ -23,7 +23,7 @@ public class DoctorController {
     }
 
     @PostMapping(value = "/register")
-    public ResponseEntity<String> createNewPatient(Doctor doctor) {
+    public ResponseEntity<String> createNewPatient(@RequestBody Doctor doctor) {
         if (doctor == null) {
             return ResponseEntity.badRequest().body("Invalid doctor information");
         }
