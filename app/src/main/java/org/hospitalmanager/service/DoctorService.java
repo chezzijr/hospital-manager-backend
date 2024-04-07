@@ -1,5 +1,6 @@
 package org.hospitalmanager.service;
 
+import org.hospitalmanager.dto.DoctorWithId;
 import org.hospitalmanager.model.Doctor;
 import org.hospitalmanager.repository.DoctorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,11 +11,15 @@ import java.util.concurrent.ExecutionException;
 
 public interface DoctorService {
 
-    Doctor getDoctorById(String doctorId) throws ExecutionException, InterruptedException;
+    DoctorWithId getDoctorById(String doctorId) throws ExecutionException, InterruptedException;
 
-    ArrayList<Doctor> getAllDoctor() throws ExecutionException, InterruptedException;
+    ArrayList<DoctorWithId> getAllDoctor() throws ExecutionException, InterruptedException;
 
     boolean createNewDoctor(Doctor doctor);
+
+    ArrayList<DoctorWithId> getDoctorByName(String name) throws ExecutionException, InterruptedException;
+
+    ArrayList<DoctorWithId> getDoctorBySpecialization(String specialization) throws ExecutionException, InterruptedException;
 
 }
 
@@ -28,17 +33,29 @@ class DoctorServiceImpl implements DoctorService {
         this.doctorRepository = doctorRepository;
     }
 
-    public Doctor getDoctorById(String doctorId) throws ExecutionException, InterruptedException {
+    @Override
+    public DoctorWithId getDoctorById(String doctorId) throws ExecutionException, InterruptedException {
         return doctorRepository.getDoctorById(doctorId);
     }
 
-    public ArrayList<Doctor> getAllDoctor() throws ExecutionException, InterruptedException {
+    @Override
+    public ArrayList<DoctorWithId> getAllDoctor() throws ExecutionException, InterruptedException {
         return doctorRepository.getAllDoctor();
     }
 
+    @Override
     public boolean createNewDoctor(Doctor doctor) {
+        return doctorRepository.createNewDoctor(doctor);
+    }
 
-        return true;
+    @Override
+    public ArrayList<DoctorWithId> getDoctorByName(String name) throws ExecutionException, InterruptedException {
+        return doctorRepository.getDoctorByName(name);
+    }
+
+    @Override
+    public ArrayList<DoctorWithId> getDoctorBySpecialization(String specialization) throws ExecutionException, InterruptedException {
+        return doctorRepository.getDoctorBySpecialization(specialization);
     }
 
 }

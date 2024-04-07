@@ -1,6 +1,7 @@
 package org.hospitalmanager.controller;
 
 
+import org.hospitalmanager.dto.DoctorWithId;
 import org.hospitalmanager.model.Doctor;
 import org.hospitalmanager.service.DoctorService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +44,7 @@ public class DoctorController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getDoctorById(@PathVariable String id) throws ExecutionException, InterruptedException {
         if (id != null) {
-            Doctor doctor = doctorService.getDoctorById(id);
+            DoctorWithId doctor = doctorService.getDoctorById(id);
 
             if (doctor != null) {
                 return ResponseEntity.status(HttpStatus.OK).body(doctor);
@@ -59,10 +60,34 @@ public class DoctorController {
 
     @GetMapping("")
     public ResponseEntity<?> getAllDoctor() throws ExecutionException, InterruptedException {
-        ArrayList<Doctor> doctorArrayList = doctorService.getAllDoctor();
+        ArrayList<DoctorWithId> doctorArrayList = doctorService.getAllDoctor();
 
         if (doctorArrayList != null) {
             return ResponseEntity.status(HttpStatus.OK).body(doctorArrayList);
+        }
+        else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error to get doctor list");
+        }
+    }
+
+    @GetMapping("/name/{name}")
+    public ResponseEntity<?> getDoctorByName(@PathVariable String name) throws ExecutionException, InterruptedException {
+        ArrayList<DoctorWithId> doctorWithIdArrayList = doctorService.getDoctorByName(name);
+
+        if (doctorWithIdArrayList != null) {
+            return ResponseEntity.status(HttpStatus.OK).body(doctorWithIdArrayList);
+        }
+        else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error to get doctor list");
+        }
+    }
+
+    @GetMapping("/specialization/{specialization}")
+    public ResponseEntity<?> getDoctorBySpecialization(@PathVariable String specialization) throws ExecutionException, InterruptedException {
+        ArrayList<DoctorWithId> doctorWithIdArrayList = doctorService.getDoctorBySpecialization(specialization);
+
+        if (doctorWithIdArrayList != null) {
+            return ResponseEntity.status(HttpStatus.OK).body(doctorWithIdArrayList);
         }
         else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error to get doctor list");
