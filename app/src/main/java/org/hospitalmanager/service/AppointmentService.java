@@ -1,5 +1,6 @@
 package org.hospitalmanager.service;
 
+import org.hospitalmanager.dto.AppointmentWithId;
 import org.hospitalmanager.model.Appointment;
 import org.hospitalmanager.repository.AppointmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,18 +11,18 @@ import java.util.concurrent.ExecutionException;
 
 public interface AppointmentService {
 
-    ArrayList<Appointment> getAllAppointment() throws ExecutionException, InterruptedException;
+    ArrayList<AppointmentWithId> getAllAppointment() throws ExecutionException, InterruptedException;
 
-    ArrayList<Appointment> getAllAppointmentByPatientId(String patientId) throws ExecutionException, InterruptedException;
+    ArrayList<AppointmentWithId> getAllAppointmentByPatientId(String patientId) throws ExecutionException, InterruptedException;
 
-    ArrayList<Appointment> getAllAppointmentByDoctorId(String doctorId) throws ExecutionException, InterruptedException;
+    ArrayList<AppointmentWithId> getAllAppointmentByDoctorId(String doctorId) throws ExecutionException, InterruptedException;
     boolean createAppointment(Appointment appointment);
 
     boolean isAppointmentBelongToPatient(String patientId, String appointmentId) throws ExecutionException, InterruptedException;
 
     boolean deleteAppointmentById(String appointmentId) throws ExecutionException, InterruptedException;
 
-    Appointment getAppointmentById(String id) throws ExecutionException, InterruptedException;
+    AppointmentWithId getAppointmentById(String id) throws ExecutionException, InterruptedException;
 }
 
 @Service
@@ -35,15 +36,15 @@ class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public ArrayList<Appointment> getAllAppointment() throws ExecutionException, InterruptedException {
+    public ArrayList<AppointmentWithId> getAllAppointment() throws ExecutionException, InterruptedException {
         return appointmentRepository.getAllAppointment();
     }
 
-    public ArrayList<Appointment> getAllAppointmentByPatientId(String patientId) throws ExecutionException, InterruptedException {
+    public ArrayList<AppointmentWithId> getAllAppointmentByPatientId(String patientId) throws ExecutionException, InterruptedException {
         return appointmentRepository.getAllAppointmentByPatientId(patientId);
     }
 
-    public ArrayList<Appointment> getAllAppointmentByDoctorId(String doctorId) throws ExecutionException, InterruptedException {
+    public ArrayList<AppointmentWithId> getAllAppointmentByDoctorId(String doctorId) throws ExecutionException, InterruptedException {
         return appointmentRepository.getAllAppointmentByDoctorId(doctorId);
     }
 
@@ -64,7 +65,7 @@ class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public Appointment getAppointmentById(String id) throws ExecutionException, InterruptedException {
+    public AppointmentWithId getAppointmentById(String id) throws ExecutionException, InterruptedException {
         return appointmentRepository.getAppointmentById(id);
     }
 }

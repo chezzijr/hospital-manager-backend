@@ -1,6 +1,7 @@
 package org.hospitalmanager.controller;
 
 
+import org.hospitalmanager.dto.AppointmentWithId;
 import org.hospitalmanager.model.Appointment;
 import org.hospitalmanager.service.AppointmentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -20,18 +22,18 @@ public class AppointmentController {
     private AppointmentService appointmentService;
 
     @Autowired
-    public void AppointmentService(AppointmentService appointmentService) {
+    public void setAppointmentService(AppointmentService appointmentService) {
         this.appointmentService = appointmentService;
     }
 
     @PostMapping(value = "/create")
     public ResponseEntity<String> createAppointment(@RequestBody Appointment appointment) {
 
-        // Unauthorized
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User authentication required");
-        }
+//        // Unauthorized
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        if (authentication == null || !authentication.isAuthenticated()) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User authentication required");
+//        }
 
         // Appointment is null
         if (appointment == null) {
@@ -53,16 +55,16 @@ public class AppointmentController {
     @GetMapping(value = "/{id}")
     public ResponseEntity<?> getAppointmentById(@PathVariable String id) throws ExecutionException, InterruptedException {
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User authentication required");
-        }
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        if (authentication == null || !authentication.isAuthenticated()) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User authentication required");
+//        }
 
         if (id == null || id.isEmpty()) {
             return ResponseEntity.badRequest().body("Invalid appointment information");
         }
         else {
-            Appointment appointment = appointmentService.getAppointmentById(id);
+            AppointmentWithId appointment = appointmentService.getAppointmentById(id);
 
             if (appointment != null) {
                 return ResponseEntity.status(HttpStatus.OK).body(appointment);
@@ -77,10 +79,10 @@ public class AppointmentController {
     public ResponseEntity<String> deleteAppointment(@PathVariable String id, @RequestBody String patientId) throws ExecutionException, InterruptedException {
 
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User authentication required");
-        }
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        if (authentication == null || !authentication.isAuthenticated()) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User authentication required");
+//        }
 
         // Appointment is null
         if (id == null || id.isEmpty()) {
@@ -103,9 +105,9 @@ public class AppointmentController {
     }
 
 
-    @GetMapping(value = "/")
+    @GetMapping(value = "")
     public ResponseEntity<?> getAppointment() throws ExecutionException, InterruptedException {
-        List<Appointment> appointments = appointmentService.getAllAppointment();
+        ArrayList<AppointmentWithId> appointments = appointmentService.getAllAppointment();
         if (appointments != null) {
             return ResponseEntity.ok(appointments);
         }

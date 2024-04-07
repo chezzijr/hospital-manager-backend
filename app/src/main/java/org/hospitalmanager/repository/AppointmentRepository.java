@@ -3,6 +3,7 @@ package org.hospitalmanager.repository;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import com.google.firebase.cloud.FirestoreClient;
+import org.hospitalmanager.dto.AppointmentWithId;
 import org.hospitalmanager.model.Appointment;
 import org.hospitalmanager.model.Location;
 import org.springframework.stereotype.Repository;
@@ -12,11 +13,11 @@ import java.util.concurrent.ExecutionException;
 
 public interface AppointmentRepository {
 
-    ArrayList<Appointment> getAllAppointment() throws ExecutionException, InterruptedException;
+    ArrayList<AppointmentWithId> getAllAppointment() throws ExecutionException, InterruptedException;
 
-    ArrayList<Appointment> getAllAppointmentByPatientId(String patientId) throws ExecutionException, InterruptedException;
+    ArrayList<AppointmentWithId> getAllAppointmentByPatientId(String patientId) throws ExecutionException, InterruptedException;
 
-    ArrayList<Appointment> getAllAppointmentByDoctorId(String doctorId) throws ExecutionException, InterruptedException;
+    ArrayList<AppointmentWithId> getAllAppointmentByDoctorId(String doctorId) throws ExecutionException, InterruptedException;
 
     boolean createAppointment(Appointment appointment);
 
@@ -24,7 +25,7 @@ public interface AppointmentRepository {
 
     boolean deleteAppointmentById(String appointmentId) throws ExecutionException, InterruptedException;
 
-    Appointment getAppointmentById(String id) throws ExecutionException, InterruptedException;
+    AppointmentWithId getAppointmentById(String id) throws ExecutionException, InterruptedException;
 }
 
 @Repository
@@ -41,6 +42,7 @@ class AppointmentRepositoryImpl implements AppointmentRepository {
 
         Map<String, Object> data = documentSnapshot.getData();
 
+        assert data != null;
         Map<String, Object> locationData = (Map<String, Object>) data.get("location");
         String address = (String) locationData.get("address");
         String floor = (String) locationData.get("floor");
@@ -54,23 +56,24 @@ class AppointmentRepositoryImpl implements AppointmentRepository {
         return new Appointment(id, patientId, appointmentDate, doctorId, content, status, location, dateOfBirth);
     }
 
-    public ArrayList<Appointment> getAllAppointment() throws ExecutionException, InterruptedException {
-        ArrayList<Appointment> appointmentList = new ArrayList<>();
+    public ArrayList<AppointmentWithId> getAllAppointment() throws ExecutionException, InterruptedException {
+        ArrayList<AppointmentWithId> appointmentList = new ArrayList<>();
 
-        ApiFuture<QuerySnapshot> query = firestore.collection("appointment").get();
+        ApiFuture<QuerySnapshot> query = firestore.collection("appointments").get();
         QuerySnapshot querySnapshot = query.get();
 
         for (DocumentSnapshot documentSnapshot : querySnapshot.getDocuments()) {
 
+            String id = documentSnapshot.getId();
             Appointment appointment = convertDocumentSnapshotToAppointmentClass(documentSnapshot);
-            appointmentList.add(appointment);
+            appointmentList.add(new AppointmentWithId(id, appointment));
         }
 
         return appointmentList;
     }
 
-    public ArrayList<Appointment> getAllAppointmentByPatientId(String patientId) throws ExecutionException, InterruptedException {
-        ArrayList<Appointment> appointmentList = new ArrayList<>();
+    public ArrayList<AppointmentWithId> getAllAppointmentByPatientId(String patientId) throws ExecutionException, InterruptedException {
+        ArrayList<AppointmentWithId> appointmentList = new ArrayList<>();
 
         CollectionReference appointmentsCollection = firestore.collection("appointment");
 
@@ -80,17 +83,18 @@ class AppointmentRepositoryImpl implements AppointmentRepository {
         List<QueryDocumentSnapshot> queryDocumentSnapshots = querySnapshot.get().getDocuments();
 
         for (QueryDocumentSnapshot queryDocumentSnapshot : queryDocumentSnapshots) {
+            String id = queryDocumentSnapshot.getId();
             Appointment appointment = convertDocumentSnapshotToAppointmentClass((DocumentSnapshot) queryDocumentSnapshot);
-            appointmentList.add(appointment);
+            appointmentList.add(new AppointmentWithId(id, appointment));
         }
 
         return appointmentList;
     }
 
-    public ArrayList<Appointment> getAllAppointmentByDoctorId(String doctorId) throws ExecutionException, InterruptedException {
-        ArrayList<Appointment> appointmentList = new ArrayList<>();
+    public ArrayList<AppointmentWithId> getAllAppointmentByDoctorId(String doctorId) throws ExecutionException, InterruptedException {
+        ArrayList<AppointmentWithId> appointmentList = new ArrayList<>();
 
-        CollectionReference appointmentsCollection = firestore.collection("appointment");
+        CollectionReference appointmentsCollection = firestore.collection("appointments");
 
         Query query = appointmentsCollection.whereEqualTo("doctorId", doctorId);
 
@@ -98,8 +102,9 @@ class AppointmentRepositoryImpl implements AppointmentRepository {
         List<QueryDocumentSnapshot> queryDocumentSnapshots = querySnapshot.get().getDocuments();
 
         for (QueryDocumentSnapshot queryDocumentSnapshot : queryDocumentSnapshots) {
+            String id = queryDocumentSnapshot.getId();
             Appointment appointment = convertDocumentSnapshotToAppointmentClass((DocumentSnapshot) queryDocumentSnapshot);
-            appointmentList.add(appointment);
+            appointmentList.add(new AppointmentWithId(id, appointment));
         }
 
         return appointmentList;
@@ -124,13 +129,13 @@ class AppointmentRepositoryImpl implements AppointmentRepository {
                 return false;
             }
 
-            if (documentExists("appointment", appointment.getId())) {
+            if (documentExists("appointments", appointment.getId())) {
                 System.out.println("Appointment with id " + appointment.getId() + " already exists.");
                 return false;
             }
 
             // Add appointment to appointments collection
-            CollectionReference appointmentsCollection = firestore.collection("appointment");
+            CollectionReference appointmentsCollection = firestore.collection("appointments");
             appointmentsCollection.document(appointment.getId()).set(appointment);
             System.out.println("Appointment created successfully.");
             return true;
@@ -153,7 +158,7 @@ class AppointmentRepositoryImpl implements AppointmentRepository {
     }
 
     public boolean deleteAppointmentById(String appointmentId) throws ExecutionException, InterruptedException {
-        DocumentReference documentReference = firestore.collection("appointment").document(appointmentId);
+        DocumentReference documentReference = firestore.collection("appointments").document(appointmentId);
         ApiFuture<DocumentSnapshot> documentSnapshotApiFuture = documentReference.get();
         DocumentSnapshot documentSnapshot = documentSnapshotApiFuture.get();
 
@@ -169,14 +174,15 @@ class AppointmentRepositoryImpl implements AppointmentRepository {
         }
     }
 
-    public Appointment getAppointmentById(String appointmentId) throws ExecutionException, InterruptedException {
-        DocumentReference documentReference = firestore.collection("appointment").document(appointmentId);
+    public AppointmentWithId getAppointmentById(String appointmentId) throws ExecutionException, InterruptedException {
+        DocumentReference documentReference = firestore.collection("appointments").document(appointmentId);
 
         ApiFuture<DocumentSnapshot> documentSnapshotApiFuture = documentReference.get();
         DocumentSnapshot documentSnapshot = documentSnapshotApiFuture.get();
         if (documentSnapshot.exists()) {
-
-            return convertDocumentSnapshotToAppointmentClass(documentSnapshot);
+            String id = documentSnapshot.getId();
+            Appointment appointment = convertDocumentSnapshotToAppointmentClass(documentSnapshot);
+            return new AppointmentWithId(id, appointment);
         }
 
         return null;
