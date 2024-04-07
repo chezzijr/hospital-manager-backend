@@ -14,7 +14,7 @@ public interface PatientService {
 
     ArrayList<PaitentWithId> getAllPatient() throws ExecutionException, InterruptedException;
 
-    boolean createNewPatient(Patient patient);
+    boolean createNewPatient(Patient patient) throws ExecutionException, InterruptedException;
 }
 
 @Service
@@ -36,9 +36,7 @@ class PatientServiceImpl implements PatientService {
         return patientRepository.getAllPatient();
     }
 
-    public boolean createNewPatient(Patient patient) {
-
-//        return true;
+    public boolean createNewPatient(Patient patient) throws ExecutionException, InterruptedException {
         return patientRepository.createNewPatient(patient);
     }
 

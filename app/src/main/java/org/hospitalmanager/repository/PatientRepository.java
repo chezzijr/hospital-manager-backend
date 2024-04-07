@@ -19,7 +19,7 @@ public interface PatientRepository {
 
     ArrayList<PaitentWithId> getAllPatient() throws ExecutionException, InterruptedException;
 
-    boolean createNewPatient(Patient patient);
+    boolean createNewPatient(Patient patient) throws ExecutionException, InterruptedException;
 }
 
 @Repository
@@ -68,11 +68,23 @@ class PatientRepositoryImpl implements PatientRepository {
     }
 
     @Override
-    public boolean createNewPatient(Patient patient) {
-        CollectionReference appointmentsCollection = firestore.collection("patient");
-        appointmentsCollection.document(patient.getId()).set(patient);
-        System.out.println("Patient created successfully.");
-        return true;
+    public boolean createNewPatient(Patient patient) throws ExecutionException, InterruptedException {
+        DocumentReference documentReference = firestore.collection("patient").document(patient.getId());
+        ApiFuture<DocumentSnapshot> documentSnapshotApiFuture = documentReference.get();
+        DocumentSnapshot documentSnapshot = documentSnapshotApiFuture.get();
+
+        if (!documentSnapshot.exists()) {
+            System.out.println("Patient with id " + patient.getId() + "does exist.");
+            return false;
+        }
+        else {
+
+            CollectionReference patientCollection = firestore.collection("patient");
+            patientCollection.document(patient.getId()).set(patient);
+            System.out.println("Patient created successfully.");
+            return true;
+        }
+
     }
 
 }

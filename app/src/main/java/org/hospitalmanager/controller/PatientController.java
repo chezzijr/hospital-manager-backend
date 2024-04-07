@@ -23,7 +23,7 @@ public class PatientController {
     }
 
     @PostMapping(value = "/register")
-    public ResponseEntity<String> createNewPatient(@RequestBody Patient patient) {
+    public ResponseEntity<String> createNewPatient(@RequestBody Patient patient) throws ExecutionException, InterruptedException {
         if (patient == null) {
             return ResponseEntity.badRequest().body("Invalid patient information");
         }
