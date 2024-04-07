@@ -1,11 +1,9 @@
 package org.hospitalmanager.repository;
 
 import com.google.api.core.ApiFuture;
-import com.google.cloud.firestore.DocumentReference;
-import com.google.cloud.firestore.DocumentSnapshot;
-import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.QuerySnapshot;
+import com.google.cloud.firestore.*;
 import com.google.firebase.cloud.FirestoreClient;
+import org.hospitalmanager.dto.PaitentWithId;
 import org.hospitalmanager.model.Patient;
 import org.springframework.stereotype.Repository;
 
@@ -17,9 +15,11 @@ import static org.hospitalmanager.model.User.Role.PATIENT;
 
 public interface PatientRepository {
 
-    Patient getPatientById(String patientId) throws ExecutionException, InterruptedException;
+    PaitentWithId getPatientById(String patientId) throws ExecutionException, InterruptedException;
 
-    ArrayList<Patient> getAllPatient() throws ExecutionException, InterruptedException;
+    ArrayList<PaitentWithId> getAllPatient() throws ExecutionException, InterruptedException;
+
+    boolean createNewPatient(Patient patient);
 }
 
 @Repository
@@ -37,33 +37,42 @@ class PatientRepositoryImpl implements PatientRepository {
     }
 
     @Override
-    public Patient getPatientById(String patientId) throws ExecutionException, InterruptedException {
+    public PaitentWithId getPatientById(String patientId) throws ExecutionException, InterruptedException {
         DocumentReference documentReference = firestore.collection("patient").document(patientId);
 
         ApiFuture<DocumentSnapshot> documentSnapshotApiFuture = documentReference.get();
         DocumentSnapshot documentSnapshot = documentSnapshotApiFuture.get();
         if (documentSnapshot.exists()) {
-
-            return convertDocumentSnapshotToPatientClass(documentSnapshot);
+            String id = documentSnapshot.getId();
+            Patient patient = convertDocumentSnapshotToPatientClass(documentSnapshot);
+            return new PaitentWithId(id, patient);
         }
 
         return null;
     }
 
     @Override
-    public ArrayList<Patient> getAllPatient() throws ExecutionException, InterruptedException {
-        ArrayList<Patient> patientList = new ArrayList<>();
+    public ArrayList<PaitentWithId> getAllPatient() throws ExecutionException, InterruptedException {
+        ArrayList<PaitentWithId> patientList = new ArrayList<>();
 
         ApiFuture<QuerySnapshot> query = firestore.collection("patient").get();
         QuerySnapshot querySnapshot = query.get();
 
         for (DocumentSnapshot documentSnapshot : querySnapshot.getDocuments()) {
-
+            String id = documentSnapshot.getId();
             Patient patient = convertDocumentSnapshotToPatientClass(documentSnapshot);
-            patientList.add(patient);
+            patientList.add(new PaitentWithId(id, patient));
         }
 
         return patientList;
+    }
+
+    @Override
+    public boolean createNewPatient(Patient patient) {
+        CollectionReference appointmentsCollection = firestore.collection("patient");
+        appointmentsCollection.document(patient.getId()).set(patient);
+        System.out.println("Patient created successfully.");
+        return true;
     }
 
 }

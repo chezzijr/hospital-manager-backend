@@ -1,5 +1,6 @@
 package org.hospitalmanager.service;
 
+import org.hospitalmanager.dto.PaitentWithId;
 import org.hospitalmanager.model.Patient;
 import org.hospitalmanager.repository.PatientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,9 +10,9 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
 public interface PatientService {
-    Patient getPatientById(String patientId) throws ExecutionException, InterruptedException;
+    PaitentWithId getPatientById(String patientId) throws ExecutionException, InterruptedException;
 
-    ArrayList<Patient> getAllPatient() throws ExecutionException, InterruptedException;
+    ArrayList<PaitentWithId> getAllPatient() throws ExecutionException, InterruptedException;
 
     boolean createNewPatient(Patient patient);
 }
@@ -27,17 +28,18 @@ class PatientServiceImpl implements PatientService {
     }
 
     @Override
-    public Patient getPatientById(String patientId) throws ExecutionException, InterruptedException {
+    public PaitentWithId getPatientById(String patientId) throws ExecutionException, InterruptedException {
         return patientRepository.getPatientById(patientId);
     }
 
-    public ArrayList<Patient> getAllPatient() throws ExecutionException, InterruptedException {
+    public ArrayList<PaitentWithId> getAllPatient() throws ExecutionException, InterruptedException {
         return patientRepository.getAllPatient();
     }
 
     public boolean createNewPatient(Patient patient) {
 
-        return true;
+//        return true;
+        return patientRepository.createNewPatient(patient);
     }
 
 }

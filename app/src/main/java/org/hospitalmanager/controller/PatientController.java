@@ -1,5 +1,6 @@
 package org.hospitalmanager.controller;
 
+import org.hospitalmanager.dto.PaitentWithId;
 import org.hospitalmanager.model.Patient;
 import org.hospitalmanager.service.PatientService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,12 +18,12 @@ public class PatientController {
     private PatientService patientService;
 
     @Autowired
-    public void PatientService(PatientService patientService) {
+    public void setPatientService(PatientService patientService) {
         this.patientService = patientService;
     }
 
     @PostMapping(value = "/register")
-    public ResponseEntity<String> createNewPatient(Patient patient) {
+    public ResponseEntity<String> createNewPatient(@RequestBody Patient patient) {
         if (patient == null) {
             return ResponseEntity.badRequest().body("Invalid patient information");
         }
@@ -42,7 +43,7 @@ public class PatientController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getPatientById(@PathVariable String id) throws ExecutionException, InterruptedException {
         if (id != null) {
-            Patient patient = patientService.getPatientById(id);
+            PaitentWithId patient = patientService.getPatientById(id);
 
             if (patient != null) {
                 return ResponseEntity.status(HttpStatus.OK).body(patient);
@@ -58,7 +59,7 @@ public class PatientController {
 
     @GetMapping("")
     public ResponseEntity<?> getAllPatient() throws ExecutionException, InterruptedException {
-        ArrayList<Patient> patientArrayList = patientService.getAllPatient();
+        ArrayList<PaitentWithId> patientArrayList = patientService.getAllPatient();
 
         if (patientArrayList != null) {
             return ResponseEntity.status(HttpStatus.OK).body(patientArrayList);
