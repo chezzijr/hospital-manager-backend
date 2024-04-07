@@ -1,5 +1,6 @@
 package org.hospitalmanager.controller;
 
+import org.hospitalmanager.dto.MedicineWithId;
 import org.hospitalmanager.model.Medicine;
 import org.hospitalmanager.service.MedicineService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +61,7 @@ public class MedicineController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid medicine name");
         }
         else {
-            ArrayList<Medicine> medicineArrayList = medicineService.getMedicineByName(medicineName);
+            ArrayList<MedicineWithId> medicineArrayList = medicineService.getMedicineByName(medicineName);
             if (!medicineArrayList.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.OK).body(medicineArrayList);
             }
@@ -80,7 +81,7 @@ public class MedicineController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid medicine type");
         }
         else {
-            ArrayList<Medicine> medicineArrayList = medicineService.getMedicineByMedicineType(medicineType);
+            ArrayList<MedicineWithId> medicineArrayList = medicineService.getMedicineByMedicineType(medicineType);
             if (!medicineArrayList.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.OK).body(medicineArrayList);
             }
@@ -100,7 +101,7 @@ public class MedicineController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid medicine bar code");
         }
         else {
-            Medicine medicine = medicineService.getMedicineByBarCode(barCode);
+            MedicineWithId medicine = medicineService.getMedicineByBarCode(barCode);
             if (medicine != null) {
                 return ResponseEntity.status(HttpStatus.OK).body(medicine);
             }

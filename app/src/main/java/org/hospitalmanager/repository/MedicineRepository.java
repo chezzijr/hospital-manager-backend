@@ -3,6 +3,7 @@ package org.hospitalmanager.repository;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import com.google.firebase.cloud.FirestoreClient;
+import org.hospitalmanager.dto.MedicineWithId;
 import org.hospitalmanager.model.Medicine;
 import org.springframework.stereotype.Repository;
 
@@ -14,11 +15,11 @@ import java.util.concurrent.ExecutionException;
 
 public interface MedicineRepository {
 
-    ArrayList<Medicine> getMedicineByName(String medicineName) throws ExecutionException, InterruptedException;
+    ArrayList<MedicineWithId> getMedicineByName(String medicineName) throws ExecutionException, InterruptedException;
 
-    ArrayList<Medicine> getMedicineByMedicineType(String medicineType) throws ExecutionException, InterruptedException;
+    ArrayList<MedicineWithId> getMedicineByMedicineType(String medicineType) throws ExecutionException, InterruptedException;
 
-    Medicine getMedicineByBarCode(String barCode) throws ExecutionException, InterruptedException;
+    MedicineWithId getMedicineByBarCode(String barCode) throws ExecutionException, InterruptedException;
 
     boolean addNewMedicine(Medicine medicine) throws ExecutionException, InterruptedException;
 
@@ -46,55 +47,61 @@ class MedicineRepositoryImpl implements MedicineRepository {
 
         return new Medicine(medicineName, barCode, description, manufacturer, price, expiryDate, activeIngredients, dosage, medicineType, inventoryStatus);
     }
-    public ArrayList<Medicine> getMedicineByName(String medicineName) throws ExecutionException, InterruptedException {
-        ArrayList<Medicine> medicineList = new ArrayList<>();
 
-        CollectionReference appointmentsCollection = firestore.collection("medicine");
+    @Override
+    public ArrayList<MedicineWithId> getMedicineByName(String medicineName) throws ExecutionException, InterruptedException {
+        ArrayList<MedicineWithId> medicineList = new ArrayList<>();
 
-        Query query = appointmentsCollection.whereEqualTo("medicineName", medicineName);
+        CollectionReference medicineCollection = firestore.collection("medicine");
 
-        ApiFuture<QuerySnapshot> querySnapshot = query.get();
-        List<QueryDocumentSnapshot> queryDocumentSnapshots = querySnapshot.get().getDocuments();
-
-        for (QueryDocumentSnapshot queryDocumentSnapshot : queryDocumentSnapshots) {
-            Medicine medicine = convertDocumentSnapshotToMedicineClass((DocumentSnapshot) queryDocumentSnapshot);
-            medicineList.add(medicine);
-        }
-
-        return medicineList;
-    }
-
-    public ArrayList<Medicine> getMedicineByMedicineType(String medicineType) throws ExecutionException, InterruptedException {
-        ArrayList<Medicine> medicineList = new ArrayList<>();
-
-        CollectionReference appointmentsCollection = firestore.collection("medicine");
-
-        Query query = appointmentsCollection.whereEqualTo("medicineType", medicineType);
+        Query query = medicineCollection.whereEqualTo("medicineName", medicineName);
 
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
         List<QueryDocumentSnapshot> queryDocumentSnapshots = querySnapshot.get().getDocuments();
 
         for (QueryDocumentSnapshot queryDocumentSnapshot : queryDocumentSnapshots) {
+            String id = queryDocumentSnapshot.getId();
             Medicine medicine = convertDocumentSnapshotToMedicineClass((DocumentSnapshot) queryDocumentSnapshot);
-            medicineList.add(medicine);
+            medicineList.add(new MedicineWithId(id, medicine));
         }
 
         return medicineList;
     }
 
-    public Medicine getMedicineByBarCode(String barCode) throws ExecutionException, InterruptedException {
+    @Override
+    public ArrayList<MedicineWithId> getMedicineByMedicineType(String medicineType) throws ExecutionException, InterruptedException {
+        ArrayList<MedicineWithId> medicineList = new ArrayList<>();
+
+        CollectionReference medicineCollection = firestore.collection("medicine");
+
+        Query query = medicineCollection.whereEqualTo("medicineType", medicineType);
+
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        List<QueryDocumentSnapshot> queryDocumentSnapshots = querySnapshot.get().getDocuments();
+
+        for (QueryDocumentSnapshot queryDocumentSnapshot : queryDocumentSnapshots) {
+            String id = queryDocumentSnapshot.getId();
+            Medicine medicine = convertDocumentSnapshotToMedicineClass((DocumentSnapshot) queryDocumentSnapshot);
+            medicineList.add(new MedicineWithId(id, medicine));
+        }
+
+        return medicineList;
+    }
+    @Override
+    public MedicineWithId getMedicineByBarCode(String barCode) throws ExecutionException, InterruptedException {
         DocumentReference documentReference = firestore.collection("medicine").document(barCode);
 
         ApiFuture<DocumentSnapshot> documentSnapshotApiFuture = documentReference.get();
         DocumentSnapshot documentSnapshot = documentSnapshotApiFuture.get();
         if (documentSnapshot.exists()) {
-
-            return convertDocumentSnapshotToMedicineClass(documentSnapshot);
+            String id = documentSnapshot.getId();
+            return new MedicineWithId(id, convertDocumentSnapshotToMedicineClass(documentSnapshot));
         }
 
         return null;
     }
 
+    @Override
     public boolean addNewMedicine(Medicine medicine) throws ExecutionException, InterruptedException {
         DocumentReference documentReference = firestore.collection("medicine").document(medicine.getBarCode());
         ApiFuture<DocumentSnapshot> documentSnapshotApiFuture = documentReference.get();
@@ -110,6 +117,7 @@ class MedicineRepositoryImpl implements MedicineRepository {
         }
     }
 
+    @Override
     public boolean editInfoMedicineByBarCode(Medicine medicine) {
 
         //
