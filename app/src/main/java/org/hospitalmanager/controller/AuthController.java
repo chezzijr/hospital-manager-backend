@@ -29,10 +29,6 @@ public class AuthController {
 
     @PostMapping(value="/signin", consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SignResponse> signInUser(@RequestBody SigninRequest req) {
-        if (req.getEmail() == null || req.getPassword() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email and password are required");
-        }
-
         try {
             SignInInfo signInInfo = authService.signInEmailPassword(req.getEmail(), req.getPassword(), null);
             SignResponse resp = new SignResponse(signInInfo.getIdToken(), signInInfo.getRefreshToken(), signInInfo.isEmailVerified());
@@ -44,9 +40,6 @@ public class AuthController {
 
     @PostMapping(value="/signup", consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SignResponse> signUpUser(@RequestBody SignupRequest req) {
-        if (req.getEmail() == null || req.getPassword() == null || req.getRole() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email and password are required");
-        }
         // cannot create admin user
         if (req.getRole().equals(Role.ADMIN)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Cannot create admin user");
@@ -63,10 +56,6 @@ public class AuthController {
 
     @PostMapping(value="/resetPassword", consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResetPasswordResponse> resetPassword(@RequestBody ResetPasswordRequest req) {
-        if (req.getEmail() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email is required");
-        }
-
         try {
             authService.sendPasswordResetEmail(req.getEmail());
             ResetPasswordResponse resp = new ResetPasswordResponse("Password reset email sent");
@@ -78,10 +67,6 @@ public class AuthController {
 
     @PostMapping(value="/refreshToken", consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<RefreshTokenResponse> refreshToken(@RequestBody RefreshTokenRequest req) {
-        if (req.getRefreshToken() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Refresh token is required");
-        }
-
         try {
             RefreshTokenResponsePayload payload = authService.refreshToken(req.getRefreshToken());
             RefreshTokenResponse resp = new RefreshTokenResponse(payload.getIdToken(), payload.getRefreshToken());
@@ -102,10 +87,6 @@ public class AuthController {
         }
 
         String token = tokens[1].trim(); // prevent some goofy ahh trailing CR LF
-
-        if (req.getNewPassword() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password is required");
-        }
 
         try {
             authService.updateUserPassword(token, req.getNewPassword());

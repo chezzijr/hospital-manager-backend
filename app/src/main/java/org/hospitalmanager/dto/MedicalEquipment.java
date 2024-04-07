@@ -2,12 +2,16 @@ package org.hospitalmanager.dto;
 
 import java.util.Date;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import jakarta.validation.constraints.NotBlank;
 
 public class MedicalEquipment {
     static public class AddRequest {
+        @NotBlank(message = "Name is required")
         private String name;
-        @JsonFormat(pattern = "yyyy-MM-dd", timezone = "UTC+7")
+
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         private Date latestMaintenanceDate;
 
         public String getName() {
@@ -20,7 +24,9 @@ public class MedicalEquipment {
     }
 
     static public class DispatchRequest {
+        @NotBlank(message = "Id is required")
         private String id;
+
         // nullable json field
         private String uid;
 
@@ -34,6 +40,7 @@ public class MedicalEquipment {
     }
 
     static public class ReturnRequest {
+        @NotBlank(message = "Id is required")
         private String id;
 
         public String getId() {

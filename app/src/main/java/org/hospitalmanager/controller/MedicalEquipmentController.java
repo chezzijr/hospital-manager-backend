@@ -78,8 +78,6 @@ public class MedicalEquipmentController {
             return ResponseEntity.status(401).body("Unauthorized");
         }
 
-        System.out.println(req.getUid());
-
         try {
             if (req.getUid() != null && token.getName().equals("ADMIN")) {
                 service.dispatchMedicalEquipment(req.getId(), req.getUid());
