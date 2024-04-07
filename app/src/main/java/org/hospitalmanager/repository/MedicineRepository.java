@@ -107,13 +107,17 @@ class MedicineRepositoryImpl implements MedicineRepository {
         ApiFuture<DocumentSnapshot> documentSnapshotApiFuture = documentReference.get();
         DocumentSnapshot documentSnapshot = documentSnapshotApiFuture.get();
 
-        if (documentSnapshot.exists()) {
-            System.out.println("Medicine created successfully.");
-            return true;
+        if (!documentSnapshot.exists()) {
+            System.out.println("Medicine with bar code " + medicine.getBarCode() + "does exist.");
+            return false;
         }
         else {
-            System.out.println("Doctor with barCode " + medicine.getBarCode() + " does not exist.");
-            return false;
+
+            CollectionReference appointmentsCollection = firestore.collection("medicine");
+            appointmentsCollection.document(medicine.getBarCode()).set(medicine);
+
+            System.out.println("Medicine with barCode created successfully.");
+            return true;
         }
     }
 
