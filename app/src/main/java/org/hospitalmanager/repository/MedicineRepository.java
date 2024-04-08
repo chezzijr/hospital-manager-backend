@@ -4,7 +4,9 @@ import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import com.google.firebase.cloud.FirestoreClient;
 import org.hospitalmanager.dto.MedicineWithId;
+import org.hospitalmanager.dto.NurseWithId;
 import org.hospitalmanager.model.Medicine;
+import org.hospitalmanager.model.Nurse;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -14,6 +16,8 @@ import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
 public interface MedicineRepository {
+
+    ArrayList<MedicineWithId> getAllMedicine() throws ExecutionException, InterruptedException;
 
     ArrayList<MedicineWithId> getMedicineByName(String medicineName) throws ExecutionException, InterruptedException;
 
@@ -46,6 +50,22 @@ class MedicineRepositoryImpl implements MedicineRepository {
         Integer inventoryStatus = Objects.requireNonNull(documentSnapshot.getDouble("inventoryStatus")).intValue();
 
         return new Medicine(medicineName, barCode, description, manufacturer, price, expiryDate, activeIngredients, dosage, medicineType, inventoryStatus);
+    }
+
+    @Override
+    public ArrayList<MedicineWithId> getAllMedicine() throws ExecutionException, InterruptedException {
+        ArrayList<MedicineWithId> medicineList = new ArrayList<>();
+
+        ApiFuture<QuerySnapshot> query = firestore.collection("medicine").get();
+        QuerySnapshot querySnapshot = query.get();
+
+        for (DocumentSnapshot documentSnapshot : querySnapshot.getDocuments()) {
+            String id = documentSnapshot.getId();
+            Medicine medicine = convertDocumentSnapshotToMedicineClass(documentSnapshot);
+            medicineList.add(new MedicineWithId(id, medicine));
+        }
+
+        return medicineList;
     }
 
     @Override
@@ -107,7 +127,7 @@ class MedicineRepositoryImpl implements MedicineRepository {
         ApiFuture<DocumentSnapshot> documentSnapshotApiFuture = documentReference.get();
         DocumentSnapshot documentSnapshot = documentSnapshotApiFuture.get();
 
-        if (!documentSnapshot.exists()) {
+        if (documentSnapshot.exists()) {
             System.out.println("Medicine with bar code " + medicine.getBarCode() + "does exist.");
             return false;
         }

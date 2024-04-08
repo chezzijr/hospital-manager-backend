@@ -73,7 +73,7 @@ class PatientRepositoryImpl implements PatientRepository {
         ApiFuture<DocumentSnapshot> documentSnapshotApiFuture = documentReference.get();
         DocumentSnapshot documentSnapshot = documentSnapshotApiFuture.get();
 
-        if (!documentSnapshot.exists()) {
+        if (documentSnapshot.exists()) {
             System.out.println("Patient with id " + patient.getId() + "does exist.");
             return false;
         }

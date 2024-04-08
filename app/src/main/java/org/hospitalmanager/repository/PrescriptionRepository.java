@@ -104,7 +104,7 @@ class PrescriptionRepositoryImpl implements PrescriptionRepository {
         ApiFuture<DocumentSnapshot> documentSnapshotApiFuture = documentReference.get();
         DocumentSnapshot documentSnapshot = documentSnapshotApiFuture.get();
 
-        if (!documentSnapshot.exists()) {
+        if (documentSnapshot.exists()) {
             System.out.println("Prescription with id " + prescription.getId() + "does exist.");
             return false;
         }
