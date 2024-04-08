@@ -13,6 +13,9 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.auth.FirebaseAuth;
 
+import com.google.cloud.firestore.Firestore;
+import com.google.firebase.cloud.FirestoreClient;
+
 @Configuration
 public class FirebaseConfiguration {
     @Autowired
@@ -35,5 +38,10 @@ public class FirebaseConfiguration {
     @Bean
     public FirebaseAuth getAuth() {
         return FirebaseAuth.getInstance(getApp());
+    }
+
+    @Bean
+    public Firestore getFirestore() {
+        return FirestoreClient.getFirestore();
     }
 }
