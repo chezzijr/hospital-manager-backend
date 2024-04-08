@@ -5,6 +5,7 @@ import org.hospitalmanager.dto.SignInInfo;
 import org.hospitalmanager.service.AuthServiceException;
 import org.hospitalmanager.repository.AuthRepositoryException.*;
 import org.hospitalmanager.repository.AuthRepository;
+import org.hospitalmanager.model.User.Role;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,7 +38,7 @@ public interface AuthService {
      * @return The sign-in response payload
      * @throws Exception if the user does not exist
      */
-    public SignInInfo signUpEmailPassword(String email, String password) throws AuthServiceException;
+    public SignInInfo signUpEmailPassword(String email, String password, Role role) throws AuthServiceException;
 
     /**
      * Send a verification email to the user
@@ -101,9 +102,9 @@ class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public SignInInfo signUpEmailPassword(String email, String password) throws AuthServiceException {
+    public SignInInfo signUpEmailPassword(String email, String password, Role role) throws AuthServiceException {
         try {
-            var user = authRepository.createUserEmailPassword(email, password);
+            var user = authRepository.createUserEmailPassword(email, password, role);
             return signInEmailPassword(email, password, user);
         } catch (UserAlreadyExistsException e) {
             throw new AuthServiceException("USER_ALREADY_EXISTS", e);
