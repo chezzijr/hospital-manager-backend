@@ -3,15 +3,19 @@ package org.hospitalmanager.controller;
 
 import org.hospitalmanager.dto.AppointmentWithId;
 import org.hospitalmanager.model.Appointment;
+import org.hospitalmanager.model.User;
 import org.hospitalmanager.service.AppointmentService;
+import org.hospitalmanager.util.AuthorizationUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -20,13 +24,15 @@ import java.util.concurrent.ExecutionException;
 public class AppointmentController {
 
     private AppointmentService appointmentService;
+    private AuthorizationUtil authorizationUtil;
 
     @Autowired
-    public void setAppointmentService(AppointmentService appointmentService) {
+    public void setAppointmentController(AppointmentService appointmentService, AuthorizationUtil authorizationUtil) {
         this.appointmentService = appointmentService;
+        this.authorizationUtil = authorizationUtil;
     }
 
-    @PostMapping(value = "/create")
+    @PostMapping(value = "/create", consumes= MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> createAppointment(@RequestBody Appointment appointment) {
 
 //        // Unauthorized
@@ -52,13 +58,12 @@ public class AppointmentController {
         }
     }
 
-    @GetMapping(value = "/{id}")
-    public ResponseEntity<?> getAppointmentById(@PathVariable String id) throws ExecutionException, InterruptedException {
-
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        if (authentication == null || !authentication.isAuthenticated()) {
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User authentication required");
-//        }
+    @GetMapping(value = "/{id}", produces=MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getAppointmentById(@RequestHeader HashMap<String, String> headers, @PathVariable String id) throws ExecutionException, InterruptedException {
+        var token = authorizationUtil.isAuthorized(headers.get("authorization"), User.Role.ADMIN, User.Role.DOCTOR, User.Role.NURSE, User.Role.PATIENT);
+        if (token == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+        }
 
         if (id == null || id.isEmpty()) {
             return ResponseEntity.badRequest().body("Invalid appointment information");
@@ -75,14 +80,13 @@ public class AppointmentController {
         }
     }
 
-    @DeleteMapping(value = "/delete/{id}")
-    public ResponseEntity<String> deleteAppointment(@PathVariable String id, @RequestBody String patientId) throws ExecutionException, InterruptedException {
+    @DeleteMapping(value = "/delete/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> deleteAppointment(@RequestHeader HashMap<String, String> headers, @PathVariable String id, @RequestBody String patientId) throws ExecutionException, InterruptedException {
 
-
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        if (authentication == null || !authentication.isAuthenticated()) {
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User authentication required");
-//        }
+        var token = authorizationUtil.isAuthorized(headers.get("authorization"), User.Role.ADMIN, User.Role.DOCTOR, User.Role.NURSE);
+        if (token == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+        }
 
         // Appointment is null
         if (id == null || id.isEmpty()) {
@@ -105,8 +109,13 @@ public class AppointmentController {
     }
 
 
-    @GetMapping(value = "")
-    public ResponseEntity<?> getAppointment() throws ExecutionException, InterruptedException {
+    @GetMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getAppointment(@RequestHeader HashMap<String, String> headers) throws ExecutionException, InterruptedException {
+        var token = authorizationUtil.isAuthorized(headers.get("authorization"), User.Role.ADMIN, User.Role.DOCTOR, User.Role.NURSE, User.Role.PATIENT);
+        if (token == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+        }
+
         ArrayList<AppointmentWithId> appointments = appointmentService.getAllAppointment();
         if (appointments != null) {
             return ResponseEntity.ok(appointments);

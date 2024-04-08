@@ -158,20 +158,22 @@ class AppointmentRepositoryImpl implements AppointmentRepository {
     }
 
     public boolean deleteAppointmentById(String appointmentId) throws ExecutionException, InterruptedException {
-        DocumentReference documentReference = firestore.collection("appointments").document(appointmentId);
-        ApiFuture<DocumentSnapshot> documentSnapshotApiFuture = documentReference.get();
-        DocumentSnapshot documentSnapshot = documentSnapshotApiFuture.get();
+//        DocumentReference documentReference = firestore.collection("appointments").document(appointmentId);
+//        ApiFuture<DocumentSnapshot> documentSnapshotApiFuture = documentReference.get();
+//        DocumentSnapshot documentSnapshot = documentSnapshotApiFuture.get();
+//
+//        if (documentSnapshot.exists()) {
+//            // Document exists, delete it
+//            documentReference.delete();
+//            System.out.println("Appointment with id " + appointmentId + " deleted successfully.");
+//            return true;
+//        } else {
+//            // Document does not exist
+//            System.out.println("Appointment with id " + appointmentId + " does not exist.");
+//            return false;
+//        }
 
-        if (documentSnapshot.exists()) {
-            // Document exists, delete it
-            documentReference.delete();
-            System.out.println("Appointment with id " + appointmentId + " deleted successfully.");
-            return true;
-        } else {
-            // Document does not exist
-            System.out.println("Appointment with id " + appointmentId + " does not exist.");
-            return false;
-        }
+        return false;
     }
 
     public AppointmentWithId getAppointmentById(String appointmentId) throws ExecutionException, InterruptedException {
