@@ -29,7 +29,7 @@ public class DoctorController {
         this.authorizationUtil = authorizationUtil;
     }
 
-    @PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/setupProfile", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> createNewPatient(@RequestBody Doctor doctor) {
         if (doctor == null) {
             return ResponseEntity.badRequest().body("Invalid doctor information");

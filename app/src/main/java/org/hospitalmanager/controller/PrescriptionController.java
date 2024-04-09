@@ -1,7 +1,6 @@
 package org.hospitalmanager.controller;
 
 import org.hospitalmanager.dto.PrescriptionWithId;
-import org.hospitalmanager.model.Medicine;
 import org.hospitalmanager.model.Prescription;
 import org.hospitalmanager.model.User;
 import org.hospitalmanager.service.PrescriptionService;

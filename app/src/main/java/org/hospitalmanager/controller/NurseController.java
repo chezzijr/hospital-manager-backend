@@ -77,7 +77,7 @@ public class NurseController {
         }
     }
 
-    @PostMapping(value = "/register", consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/setupProfile", consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> createNewNurse(Nurse nurse) throws ExecutionException, InterruptedException {
         if (nurse == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid info nurse");

@@ -29,7 +29,7 @@ public class PatientController {
         this.authorizationUtil = authorizationUtil;
     }
 
-    @PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/setupProfile", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> createNewPatient(@RequestBody Patient patient) throws ExecutionException, InterruptedException {
         if (patient == null) {
             return ResponseEntity.badRequest().body("Invalid patient information");
