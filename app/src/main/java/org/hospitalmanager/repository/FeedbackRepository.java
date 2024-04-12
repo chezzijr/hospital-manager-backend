@@ -36,8 +36,9 @@ class FeedbackRepositoryImpl implements FeedbackRepository {
         String doctorId = documentSnapshot.getString("doctorId");
         String content = documentSnapshot.getString("content");
         Integer ratingStar = Objects.requireNonNull(documentSnapshot.getDouble("ratingStar")).intValue();
+        Date dateCreated = documentSnapshot.getDate("dateCreated");
 
-        return new Feedback(id, patientId, doctorId, content, ratingStar);
+        return new Feedback(id, patientId, doctorId, content, ratingStar, dateCreated);
     }
 
     @Override
