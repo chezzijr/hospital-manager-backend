@@ -31,7 +31,7 @@ public class AuthController {
     public ResponseEntity<SignResponse> signInUser(@RequestBody SigninRequest req) {
         try {
             SignInInfo signInInfo = authService.signInEmailPassword(req.getEmail(), req.getPassword(), null);
-            SignResponse resp = new SignResponse(signInInfo.getIdToken(), signInInfo.getRefreshToken(), signInInfo.isEmailVerified());
+            SignResponse resp = new SignResponse(signInInfo.getUid(), signInInfo.getRole(), signInInfo.getIdToken(), signInInfo.getRefreshToken(), signInInfo.isEmailVerified());
             return ResponseEntity.ok(resp);
         } catch (AuthServiceException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
@@ -47,7 +47,7 @@ public class AuthController {
 
         try {
             SignInInfo signInInfo = authService.signUpEmailPassword(req.getEmail(), req.getPassword(), req.getRole());
-            SignResponse resp = new SignResponse(signInInfo.getIdToken(), signInInfo.getRefreshToken(), signInInfo.isEmailVerified());
+            SignResponse resp = new SignResponse(signInInfo.getUid(), signInInfo.getRole(), signInInfo.getIdToken(), signInInfo.getRefreshToken(), signInInfo.isEmailVerified());
             return ResponseEntity.ok(resp);
         } catch (AuthServiceException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());

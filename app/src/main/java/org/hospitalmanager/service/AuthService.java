@@ -95,7 +95,17 @@ class AuthServiceImpl implements AuthService {
                 sendVerificationEmail(idToken);
             }
 
-            return new SignInInfo(idToken, payload.getRefreshToken(), user.isEmailVerified());
+            Role r = switch (user.getDisplayName()) {
+                case "PATIENT" -> Role.PATIENT;
+                case "DOCTOR" -> Role.DOCTOR;
+                case "ADMIN" -> Role.ADMIN;
+                default -> {
+                    logger.warn("Unknown role: " + user.getDisplayName());
+                    throw new AuthServiceException("UNKNOWN_ROLE");
+                }
+            };
+
+            return new SignInInfo(user.getUid(), r, idToken, payload.getRefreshToken(), user.isEmailVerified());
         } catch (UserNotFoundException e)  {
             throw new AuthServiceException("USER_NOT_FOUND", e);
         }

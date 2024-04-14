@@ -46,14 +46,26 @@ public class Auth {
     }
 
     public static class SignResponse {
+        private String uid;
+        private Role role;
         private String idToken;
         private String refreshToken;
         private boolean emailVerified;
 
-        public SignResponse(String idToken, String refreshToken, boolean emailVerified) {
+        public SignResponse(String uid, Role role, String idToken, String refreshToken, boolean emailVerified) {
+            this.uid = uid;
+            this.role = role;
             this.idToken = idToken;
             this.refreshToken = refreshToken;
             this.emailVerified = emailVerified;
+        }
+
+        public String getUid() {
+            return uid;
+        }
+
+        public Role getRole() {
+            return role;
         }
 
         public String getIdToken() {
