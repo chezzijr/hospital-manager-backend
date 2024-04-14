@@ -71,7 +71,7 @@ public interface AuthService {
      */
     public RefreshTokenResponsePayload refreshToken(String refreshToken) throws AuthServiceException;
 
-    public UserRecord updateUserPassword(String idToken, String password) throws AuthServiceException;
+    public UserRecord updateUserPassword(String uid, String password) throws AuthServiceException;
 }
 
 @Service
@@ -160,9 +160,8 @@ class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public UserRecord updateUserPassword(String idToken, String password) throws AuthServiceException {
-        FirebaseToken token = verifyToken(idToken);
-        UpdateRequest req = new UpdateRequest(token.getUid()).setPassword(password);
+    public UserRecord updateUserPassword(String uid, String password) throws AuthServiceException {
+        UpdateRequest req = new UpdateRequest(uid).setPassword(password);
         try {
             return authRepository.updateUser(req);
         } catch (UserNotFoundException e) {
