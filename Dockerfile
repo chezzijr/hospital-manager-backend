@@ -8,7 +8,7 @@ COPY . .
 RUN gradle dependencies --refresh-dependencies && gradle clean build
 
 # App image.
-FROM amazoncorretto:21-alpine AS runtime
+FROM eclipse-temurin:21 AS runtime
 WORKDIR /app
 COPY --from=builder build-workspace/app/build/libs/*.jar ./app.jar
 EXPOSE 8080
