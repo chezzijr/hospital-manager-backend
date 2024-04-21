@@ -16,8 +16,6 @@ public interface FeedbackRepository {
 
     ArrayList<FeedbackWithId> getFeedbackByPatientId(String patientId) throws ExecutionException, InterruptedException;
 
-    ArrayList<FeedbackWithId> getFeedbackByDoctorId(String doctorId) throws ExecutionException, InterruptedException;
-
     FeedbackWithId getFeedbackById(String id) throws ExecutionException, InterruptedException;
 
     boolean editFeedBackById(FeedbackWithId feedback) throws ExecutionException, InterruptedException;
@@ -33,12 +31,11 @@ class FeedbackRepositoryImpl implements FeedbackRepository {
     private Feedback convertDocumentSnapshotToFeedbackClass(DocumentSnapshot documentSnapshot) {
         String id = documentSnapshot.getString("id");
         String patientId = documentSnapshot.getString("patientId");
-        String doctorId = documentSnapshot.getString("doctorId");
         String content = documentSnapshot.getString("content");
         Integer ratingStar = Objects.requireNonNull(documentSnapshot.getDouble("ratingStar")).intValue();
         Date dateCreated = documentSnapshot.getDate("dateCreated");
 
-        return new Feedback(id, patientId, doctorId, content, ratingStar, dateCreated);
+        return new Feedback(id, patientId, content, ratingStar, dateCreated);
     }
 
     @Override
@@ -78,25 +75,6 @@ class FeedbackRepositoryImpl implements FeedbackRepository {
         return feedbackList;
     }
 
-    @Override
-    public ArrayList<FeedbackWithId> getFeedbackByDoctorId(String doctorId) throws ExecutionException, InterruptedException {
-        ArrayList<FeedbackWithId> feedbackList = new ArrayList<>();
-
-        CollectionReference feedbackCollection = firestore.collection("feedback");
-
-        Query query = feedbackCollection.whereEqualTo("doctorId", doctorId);
-
-        ApiFuture<QuerySnapshot> querySnapshot = query.get();
-        List<QueryDocumentSnapshot> queryDocumentSnapshots = querySnapshot.get().getDocuments();
-
-        for (QueryDocumentSnapshot queryDocumentSnapshot : queryDocumentSnapshots) {
-            String id = queryDocumentSnapshot.getId();
-            Feedback feedback = convertDocumentSnapshotToFeedbackClass((DocumentSnapshot) queryDocumentSnapshot);
-            feedbackList.add(new FeedbackWithId(id, feedback));
-        }
-
-        return feedbackList;
-    }
 
     @Override
     public FeedbackWithId getFeedbackById(String feedbackId) throws ExecutionException, InterruptedException {
@@ -131,7 +109,6 @@ class FeedbackRepositoryImpl implements FeedbackRepository {
 
         Map<String, Object> updatedData = new HashMap<>();
         updatedData.put("patientId", feedback.getFeedback().getPatientId());
-        updatedData.put("doctorId", feedback.getFeedback().getDoctorId());
         updatedData.put("content", feedback.getFeedback().getContent());
         updatedData.put("ratingStar", feedback.getFeedback().getRatingStar());
 

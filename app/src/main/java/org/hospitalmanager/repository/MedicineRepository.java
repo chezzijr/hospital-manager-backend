@@ -4,9 +4,7 @@ import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import com.google.firebase.cloud.FirestoreClient;
 import org.hospitalmanager.dto.MedicineWithId;
-import org.hospitalmanager.dto.NurseWithId;
 import org.hospitalmanager.model.Medicine;
-import org.hospitalmanager.model.Nurse;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;

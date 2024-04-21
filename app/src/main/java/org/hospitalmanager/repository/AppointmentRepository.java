@@ -26,6 +26,8 @@ public interface AppointmentRepository {
     boolean deleteAppointmentById(String appointmentId) throws ExecutionException, InterruptedException;
 
     AppointmentWithId getAppointmentById(String id) throws ExecutionException, InterruptedException;
+
+    ArrayList<AppointmentWithId> getAppointmentByRangeDay(Date startDate, Date endDate) throws ExecutionException, InterruptedException;
 }
 
 @Repository
@@ -75,7 +77,7 @@ class AppointmentRepositoryImpl implements AppointmentRepository {
     public ArrayList<AppointmentWithId> getAllAppointmentByPatientId(String patientId) throws ExecutionException, InterruptedException {
         ArrayList<AppointmentWithId> appointmentList = new ArrayList<>();
 
-        CollectionReference appointmentsCollection = firestore.collection("appointment");
+        CollectionReference appointmentsCollection = firestore.collection("appointments");
 
         Query query = appointmentsCollection.whereEqualTo("patientId", patientId);
 
@@ -188,5 +190,21 @@ class AppointmentRepositoryImpl implements AppointmentRepository {
         }
 
         return null;
+    }
+
+    @Override
+    public ArrayList<AppointmentWithId> getAppointmentByRangeDay(Date startDate, Date endDate) throws ExecutionException, InterruptedException {
+        Query query = firestore.collection("appointment")
+                .whereGreaterThanOrEqualTo("appointmentDate", startDate)
+                .whereLessThanOrEqualTo("appointmentDate", endDate);
+
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        ArrayList<AppointmentWithId> appointmentList = new ArrayList<>();
+        for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
+            String id = document.getId();
+            Appointment appointment = convertDocumentSnapshotToAppointmentClass(document);
+            appointmentList.add(new AppointmentWithId(id, appointment));
+        }
+        return appointmentList;
     }
 }

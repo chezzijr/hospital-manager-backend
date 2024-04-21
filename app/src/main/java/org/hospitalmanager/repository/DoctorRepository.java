@@ -40,7 +40,7 @@ class DoctorRepositoryImpl implements DoctorRepository {
         String specialization = documentSnapshot.getString("specialization");
         String qualification = documentSnapshot.getString("qualification");
         Integer yearOfExperience = Objects.requireNonNull(documentSnapshot.getDouble("yearOfExperience")).intValue();
-        Integer workingHours = Integer.valueOf(Objects.requireNonNull(documentSnapshot.getString("workingHours")));
+        Integer workingHours = Objects.requireNonNull(documentSnapshot.getDouble("workingHours")).intValue();
         String phoneNumber = documentSnapshot.getString("phoneNumber");
         String email = documentSnapshot.getString("email");
         String gender = documentSnapshot.getString("gender");

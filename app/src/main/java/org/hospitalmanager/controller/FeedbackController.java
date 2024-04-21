@@ -53,16 +53,6 @@ public class FeedbackController {
         return ResponseEntity.status(HttpStatus.OK).body(feedbackList);
     }
 
-    @GetMapping(value = "/doctor/{doctorId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getFeedBackByDoctorId(@RequestHeader HashMap<String, String> headers, @PathVariable String doctorId) throws ExecutionException, InterruptedException {
-        var token = authorizationUtil.isAuthorized(headers.get("authorization"), User.Role.ADMIN, User.Role.DOCTOR, User.Role.NURSE, User.Role.PATIENT);
 
-        if (token == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
-        }
-
-        ArrayList<FeedbackWithId> feedbackList = feedbackService.getFeedbackByDoctorId(doctorId);
-        return ResponseEntity.status(HttpStatus.OK).body(feedbackList);
-    }
 
 }

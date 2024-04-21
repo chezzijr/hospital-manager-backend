@@ -1,7 +1,6 @@
 package org.hospitalmanager.controller;
 
 import org.hospitalmanager.dto.PaitentWithId;
-import org.hospitalmanager.model.Medicine;
 import org.hospitalmanager.model.Patient;
 import org.hospitalmanager.model.User;
 import org.hospitalmanager.service.PatientService;
@@ -69,7 +68,7 @@ public class PatientController {
         }
     }
 
-    @GetMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAllPatient(@RequestHeader HashMap<String, String> headers) throws ExecutionException, InterruptedException {
         var token = authorizationUtil.isAuthorized(headers.get("authorization"), User.Role.ADMIN, User.Role.DOCTOR, User.Role.NURSE, User.Role.PATIENT);
         if (token == null) {

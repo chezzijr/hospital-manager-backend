@@ -15,8 +15,6 @@ public interface FeedbackService {
 
     ArrayList<FeedbackWithId> getFeedbackByPatientId(String patientId) throws ExecutionException, InterruptedException;
 
-    ArrayList<FeedbackWithId> getFeedbackByDoctorId(String doctorId) throws ExecutionException, InterruptedException;
-
     FeedbackWithId getFeedbackById(String id) throws ExecutionException, InterruptedException;
 
     boolean editFeedBackById(FeedbackWithId feedback) throws ExecutionException, InterruptedException;
@@ -43,11 +41,6 @@ class FeedbackServiceImpl implements FeedbackService {
     @Override
     public ArrayList<FeedbackWithId> getFeedbackByPatientId(String patientId) throws ExecutionException, InterruptedException {
         return feedbackRepository.getFeedbackByPatientId(patientId);
-    }
-
-    @Override
-    public ArrayList<FeedbackWithId> getFeedbackByDoctorId(String doctorId) throws ExecutionException, InterruptedException {
-        return feedbackRepository.getFeedbackByDoctorId(doctorId);
     }
 
     @Override
