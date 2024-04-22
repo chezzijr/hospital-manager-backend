@@ -50,7 +50,7 @@ class AppointmentRepositoryImpl implements AppointmentRepository {
         String floor = (String) locationData.get("floor");
         String roomNumber = (String) locationData.get("roomNumber");
 
-        Appointment.Status status = Objects.equals(documentSnapshot.getString("status"), "SUCCESS") ? Appointment.Status.SUCCESS : (Objects.equals(documentSnapshot.getString("status"), "WAITING") ? Appointment.Status.WAITING : Appointment.Status.FAILED);
+        String status = documentSnapshot.getString("status");
 
         Location location = new Location(address, floor, roomNumber);
         Date dateOfBirth = documentSnapshot.getDate("dateOfBirth");
@@ -112,39 +112,12 @@ class AppointmentRepositoryImpl implements AppointmentRepository {
         return appointmentList;
     }
 
-    private boolean documentExists(String collectionName, String documentId) throws ExecutionException, InterruptedException {
-        DocumentReference documentReference = firestore.collection(collectionName).document(documentId);
-        ApiFuture<DocumentSnapshot> documentSnapshotApiFuture = documentReference.get();
-        DocumentSnapshot documentSnapshot = documentSnapshotApiFuture.get();
-        return documentSnapshot.exists();
-    }
 
     public boolean createAppointment(Appointment appointment) {
-        try {
-            if (!documentExists("patient", appointment.getPatientId())) {
-                System.out.println("Patient with id " + appointment.getPatientId() + " does not exist.");
-                return false;
-            }
-
-            if (!documentExists("doctor", appointment.getDoctorId())) {
-                System.out.println("Doctor with id " + appointment.getDoctorId() + " does not exist.");
-                return false;
-            }
-
-            if (documentExists("appointments", appointment.getId())) {
-                System.out.println("Appointment with id " + appointment.getId() + " already exists.");
-                return false;
-            }
-
-            // Add appointment to appointments collection
-            CollectionReference appointmentsCollection = firestore.collection("appointments");
-            appointmentsCollection.document(appointment.getId()).set(appointment);
-            System.out.println("Appointment created successfully.");
-            return true;
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-            return false;
-        }
+        CollectionReference appointmentsCollection = firestore.collection("appointments");
+        appointmentsCollection.document(appointment.getId()).set(appointment);
+        System.out.println("Appointment created successfully.");
+        return true;
     }
 
     public boolean isAppointmentBelongToPatient(String patientId, String appointmentId) throws ExecutionException, InterruptedException {
