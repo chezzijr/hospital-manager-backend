@@ -1,7 +1,6 @@
 package org.hospitalmanager.controller;
 
 import org.hospitalmanager.dto.PaitentWithId;
-import org.hospitalmanager.model.Medicine;
 import org.hospitalmanager.model.Patient;
 import org.hospitalmanager.model.User;
 import org.hospitalmanager.service.PatientService;
@@ -39,6 +38,11 @@ public class PatientController {
         if (patient == null) {
             return ResponseEntity.badRequest().body("Invalid patient information");
         }
+
+        if (!token.getName().equals(User.Role.ADMIN.name()) && !patient.getId().equals(token.getUid())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+        }
+
         else {
 
             boolean success = patientService.createNewPatient(patient);

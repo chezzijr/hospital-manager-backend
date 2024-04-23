@@ -88,6 +88,10 @@ public class NurseController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid info nurse");
         }
 
+        if (!token.getName().equals(User.Role.ADMIN.name()) && !nurse.getId().equals(token.getUid())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+        }
+
         boolean success = nurseService.addNewNurse(nurse);
 
         if (success) {

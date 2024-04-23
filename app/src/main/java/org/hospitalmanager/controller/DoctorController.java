@@ -39,6 +39,11 @@ public class DoctorController {
         if (doctor == null) {
             return ResponseEntity.badRequest().body("Invalid doctor information");
         }
+
+        if (!token.getName().equals(User.Role.ADMIN.name()) && !doctor.getId().equals(token.getUid())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+        }
+
         else {
 
             boolean success = doctorService.createNewDoctor(doctor);
