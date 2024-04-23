@@ -78,7 +78,12 @@ public class NurseController {
     }
 
     @PostMapping(value = "/setupProfile", consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> createNewNurse(Nurse nurse) throws ExecutionException, InterruptedException {
+    public ResponseEntity<String> createNewNurse(@RequestHeader HashMap<String, String> headers, @RequestBody Nurse nurse) throws ExecutionException, InterruptedException {
+        var token = authUtil.isAuthorized(headers.get("authorization"), User.Role.ADMIN, User.Role.NURSE);
+        if (token == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorizaed");
+        }
+
         if (nurse == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid info nurse");
         }

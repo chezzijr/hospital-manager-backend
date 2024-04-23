@@ -21,16 +21,21 @@ import java.util.concurrent.ExecutionException;
 public class PatientController {
 
     private PatientService patientService;
-    private AuthorizationUtil authorizationUtil;
+    private AuthorizationUtil authUtil;
 
     @Autowired
     public void setPatientController(PatientService patientService, AuthorizationUtil authorizationUtil) {
         this.patientService = patientService;
-        this.authorizationUtil = authorizationUtil;
+        this.authUtil = authorizationUtil;
     }
 
     @PostMapping(value = "/setupProfile", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> createNewPatient(@RequestBody Patient patient) throws ExecutionException, InterruptedException {
+    public ResponseEntity<String> createNewPatient(@RequestHeader HashMap<String, String> headers, @RequestBody Patient patient) throws ExecutionException, InterruptedException {
+        var token = authUtil.isAuthorized(headers.get("authorization"), User.Role.ADMIN, User.Role.PATIENT);
+        if (token == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+        }
+
         if (patient == null) {
             return ResponseEntity.badRequest().body("Invalid patient information");
         }
@@ -49,7 +54,7 @@ public class PatientController {
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getPatientById(@RequestHeader HashMap<String, String> headers, @PathVariable String id) throws ExecutionException, InterruptedException {
-        var token = authorizationUtil.isAuthorized(headers.get("authorization"), User.Role.ADMIN, User.Role.DOCTOR, User.Role.NURSE, User.Role.PATIENT);
+        var token = authUtil.isAuthorized(headers.get("authorization"), User.Role.ADMIN, User.Role.DOCTOR, User.Role.NURSE, User.Role.PATIENT);
         if (token == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
         }
@@ -71,7 +76,7 @@ public class PatientController {
 
     @GetMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAllPatient(@RequestHeader HashMap<String, String> headers) throws ExecutionException, InterruptedException {
-        var token = authorizationUtil.isAuthorized(headers.get("authorization"), User.Role.ADMIN, User.Role.DOCTOR, User.Role.NURSE, User.Role.PATIENT);
+        var token = authUtil.isAuthorized(headers.get("authorization"), User.Role.ADMIN, User.Role.DOCTOR, User.Role.NURSE, User.Role.PATIENT);
         if (token == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
         }

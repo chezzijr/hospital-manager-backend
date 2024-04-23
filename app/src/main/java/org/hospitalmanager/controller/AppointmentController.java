@@ -10,13 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 @RestController
@@ -24,22 +21,19 @@ import java.util.concurrent.ExecutionException;
 public class AppointmentController {
 
     private AppointmentService appointmentService;
-    private AuthorizationUtil authorizationUtil;
+    private AuthorizationUtil authUtil;
 
     @Autowired
     public void setAppointmentController(AppointmentService appointmentService, AuthorizationUtil authorizationUtil) {
         this.appointmentService = appointmentService;
-        this.authorizationUtil = authorizationUtil;
+        this.authUtil = authorizationUtil;
     }
 
     @PostMapping(value = "/create", consumes= MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> createAppointment(@RequestBody Appointment appointment) {
-
-//        // Unauthorized
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        if (authentication == null || !authentication.isAuthenticated()) {
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User authentication required");
-//        }
+    public ResponseEntity<String> createAppointment(@RequestHeader HashMap<String, String> headers, @RequestBody Appointment appointment) {
+        if (authUtil.isAuthorized(headers.get("authorization"), User.Role.ADMIN, User.Role.DOCTOR, User.Role.NURSE, User.Role.PATIENT) == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+        }
 
         // Appointment is null
         if (appointment == null) {
@@ -60,7 +54,7 @@ public class AppointmentController {
 
     @GetMapping(value = "/{id}", produces=MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAppointmentById(@RequestHeader HashMap<String, String> headers, @PathVariable String id) throws ExecutionException, InterruptedException {
-        var token = authorizationUtil.isAuthorized(headers.get("authorization"), User.Role.ADMIN, User.Role.DOCTOR, User.Role.NURSE, User.Role.PATIENT);
+        var token = authUtil.isAuthorized(headers.get("authorization"), User.Role.ADMIN, User.Role.DOCTOR, User.Role.NURSE, User.Role.PATIENT);
         if (token == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
         }
@@ -83,7 +77,7 @@ public class AppointmentController {
     @DeleteMapping(value = "/delete/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> deleteAppointment(@RequestHeader HashMap<String, String> headers, @PathVariable String id, @RequestBody String patientId) throws ExecutionException, InterruptedException {
 
-        var token = authorizationUtil.isAuthorized(headers.get("authorization"), User.Role.ADMIN, User.Role.DOCTOR, User.Role.NURSE);
+        var token = authUtil.isAuthorized(headers.get("authorization"), User.Role.ADMIN, User.Role.DOCTOR, User.Role.NURSE);
         if (token == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
         }
@@ -111,7 +105,7 @@ public class AppointmentController {
 
     @GetMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAppointment(@RequestHeader HashMap<String, String> headers) throws ExecutionException, InterruptedException {
-        var token = authorizationUtil.isAuthorized(headers.get("authorization"), User.Role.ADMIN, User.Role.DOCTOR, User.Role.NURSE, User.Role.PATIENT);
+        var token = authUtil.isAuthorized(headers.get("authorization"), User.Role.ADMIN, User.Role.DOCTOR, User.Role.NURSE, User.Role.PATIENT);
         if (token == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
         }
