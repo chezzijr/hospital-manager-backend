@@ -15,6 +15,7 @@ public interface PrescriptionService {
     ArrayList<PrescriptionWithId> getPrescriptionByPatientId(String patientId) throws ExecutionException, InterruptedException;
     ArrayList<PrescriptionWithId> getPrescriptionByDoctorId(String doctorId) throws ExecutionException, InterruptedException;
     boolean createNewPrescription(Prescription prescription) throws ExecutionException, InterruptedException;
+    ArrayList<PrescriptionWithId> getAllPrescriptions() throws ExecutionException, InterruptedException;
 }
 
 @Service
@@ -45,5 +46,10 @@ class PrescriptionServiceImpl implements PrescriptionService {
     @Override
     public boolean createNewPrescription(Prescription prescription) throws ExecutionException, InterruptedException {
         return prescriptionRepository.createNewPrescription(prescription);
+    }
+
+    @Override
+    public ArrayList<PrescriptionWithId> getAllPrescriptions() throws ExecutionException, InterruptedException {
+        return prescriptionRepository.getAllPrescription();
     }
 }

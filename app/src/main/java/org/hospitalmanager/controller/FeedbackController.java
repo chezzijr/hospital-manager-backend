@@ -1,6 +1,7 @@
 package org.hospitalmanager.controller;
 
 import org.hospitalmanager.dto.FeedbackWithId;
+import org.hospitalmanager.model.Feedback;
 import org.hospitalmanager.model.User;
 import org.hospitalmanager.service.FeedbackService;
 import org.hospitalmanager.util.AuthorizationUtil;
@@ -53,6 +54,22 @@ public class FeedbackController {
         return ResponseEntity.status(HttpStatus.OK).body(feedbackList);
     }
 
+    @PostMapping(value = "/create", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> createFeedback(@RequestHeader HashMap<String, String> headers, @RequestBody Feedback feedback) throws ExecutionException, InterruptedException {
+        var token = authorizationUtil.isAuthorized(headers.get("authorization"), User.Role.ADMIN, User.Role.DOCTOR, User.Role.NURSE, User.Role.PATIENT);
 
+        if (token == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+        }
+
+        boolean success = feedbackService.createNewFeedback(feedback);
+
+        if (success) {
+            return ResponseEntity.status(HttpStatus.CREATED).body("Created successfully");
+        }
+        else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to create feedback");
+        }
+    }
 
 }

@@ -53,9 +53,9 @@ class AppointmentRepositoryImpl implements AppointmentRepository {
         String status = documentSnapshot.getString("status");
 
         Location location = new Location(address, floor, roomNumber);
-        Date dateOfBirth = documentSnapshot.getDate("dateOfBirth");
+        Date dateCreated = documentSnapshot.getDate("dateCreated");
 
-        return new Appointment(id, patientId, appointmentDate, doctorId, content, status, location, dateOfBirth);
+        return new Appointment(id, patientId, appointmentDate, doctorId, content, status, location, dateCreated);
     }
 
     public ArrayList<AppointmentWithId> getAllAppointment() throws ExecutionException, InterruptedException {

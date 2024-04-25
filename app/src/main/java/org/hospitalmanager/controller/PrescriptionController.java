@@ -112,6 +112,20 @@ public class PrescriptionController {
             return ResponseEntity.status(HttpStatus.OK).body("Doctor don't have prescription");
         }
         return ResponseEntity.status(HttpStatus.OK).body(prescriptionList);
+    }
 
+    @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getAllPrescription(@RequestHeader HashMap<String, String> headers) throws ExecutionException, InterruptedException {
+        var token = authorizationUtil.isAuthorized(headers.get("authorization"), User.Role.ADMIN, User.Role.DOCTOR, User.Role.NURSE, User.Role.PATIENT);
+        if (token == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+        }
+
+        ArrayList<PrescriptionWithId> prescriptionList = prescriptionService.getAllPrescriptions();
+
+        if (prescriptionList.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.OK).body("Don't have prescription");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(prescriptionList);
     }
 }

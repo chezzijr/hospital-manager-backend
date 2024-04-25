@@ -48,12 +48,7 @@ public class DoctorController {
     }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getDoctorById(@RequestHeader HashMap<String, String> headers, @PathVariable String id) throws ExecutionException, InterruptedException {
-
-        var token = authorizationUtil.isAuthorized(headers.get("authorization"), User.Role.ADMIN, User.Role.DOCTOR, User.Role.NURSE, User.Role.PATIENT);
-        if (token == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
-        }
+    public ResponseEntity<?> getDoctorById(@PathVariable String id) throws ExecutionException, InterruptedException {
 
         if (id != null) {
             DoctorWithId doctor = doctorService.getDoctorById(id);
@@ -71,11 +66,7 @@ public class DoctorController {
     }
 
     @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getAllDoctor(@RequestHeader HashMap<String, String> headers) throws ExecutionException, InterruptedException {
-        var token = authorizationUtil.isAuthorized(headers.get("authorization"), User.Role.ADMIN, User.Role.DOCTOR, User.Role.NURSE, User.Role.PATIENT);
-        if (token == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
-        }
+    public ResponseEntity<?> getAllDoctor() throws ExecutionException, InterruptedException {
 
         ArrayList<DoctorWithId> doctorArrayList = doctorService.getAllDoctor();
 
@@ -88,11 +79,7 @@ public class DoctorController {
     }
 
     @GetMapping(value = "/name/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getDoctorByName(@RequestHeader HashMap<String, String> headers, @PathVariable String name) throws ExecutionException, InterruptedException {
-        var token = authorizationUtil.isAuthorized(headers.get("authorization"), User.Role.ADMIN, User.Role.DOCTOR, User.Role.NURSE, User.Role.PATIENT);
-        if (token == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
-        }
+    public ResponseEntity<?> getDoctorByName(@PathVariable String name) throws ExecutionException, InterruptedException {
 
         ArrayList<DoctorWithId> doctorWithIdArrayList = doctorService.getDoctorByName(name);
 
@@ -105,11 +92,7 @@ public class DoctorController {
     }
 
     @GetMapping(value = "/specialization/{specialization}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getDoctorBySpecialization(@RequestHeader HashMap<String, String> headers, @PathVariable String specialization) throws ExecutionException, InterruptedException {
-        var token = authorizationUtil.isAuthorized(headers.get("authorization"), User.Role.ADMIN, User.Role.DOCTOR, User.Role.NURSE, User.Role.PATIENT);
-        if (token == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
-        }
+    public ResponseEntity<?> getDoctorBySpecialization(@PathVariable String specialization) throws ExecutionException, InterruptedException {
 
         ArrayList<DoctorWithId> doctorWithIdArrayList = doctorService.getDoctorBySpecialization(specialization);
 
