@@ -31,7 +31,8 @@ public class AppointmentController {
 
     @PostMapping(value = "/create", consumes= MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> createAppointment(@RequestHeader HashMap<String, String> headers, @RequestBody Appointment appointment) {
-        if (authUtil.isAuthorized(headers.get("authorization"), User.Role.ADMIN, User.Role.DOCTOR, User.Role.NURSE, User.Role.PATIENT) == null) {
+        var token = authorizationUtil.isAuthorized(headers.get("authorization"), User.Role.ADMIN, User.Role.DOCTOR, User.Role.NURSE, User.Role.PATIENT);
+        if (token == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
         }
 
@@ -103,7 +104,7 @@ public class AppointmentController {
     }
 
 
-    @GetMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAppointment(@RequestHeader HashMap<String, String> headers) throws ExecutionException, InterruptedException {
         var token = authUtil.isAuthorized(headers.get("authorization"), User.Role.ADMIN, User.Role.DOCTOR, User.Role.NURSE, User.Role.PATIENT);
         if (token == null) {
@@ -111,6 +112,38 @@ public class AppointmentController {
         }
 
         ArrayList<AppointmentWithId> appointments = appointmentService.getAllAppointment();
+        if (appointments != null) {
+            return ResponseEntity.ok(appointments);
+        }
+        else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error to get appointment");
+        }
+    }
+
+    @GetMapping(value = "/patient/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getAppointmentByPatientId(@RequestHeader HashMap<String, String> headers, @PathVariable String id) throws ExecutionException, InterruptedException {
+        var token = authorizationUtil.isAuthorized(headers.get("authorization"), User.Role.ADMIN, User.Role.DOCTOR, User.Role.NURSE, User.Role.PATIENT);
+        if (token == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+        }
+
+        ArrayList<AppointmentWithId> appointments = appointmentService.getAllAppointmentByPatientId(id);
+        if (appointments != null) {
+            return ResponseEntity.ok(appointments);
+        }
+        else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error to get appointment");
+        }
+    }
+
+    @GetMapping(value = "/doctor/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getAppointmentByDoctorId(@RequestHeader HashMap<String, String> headers, @PathVariable String id) throws ExecutionException, InterruptedException {
+        var token = authorizationUtil.isAuthorized(headers.get("authorization"), User.Role.ADMIN, User.Role.DOCTOR, User.Role.NURSE, User.Role.PATIENT);
+        if (token == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+        }
+
+        ArrayList<AppointmentWithId> appointments = appointmentService.getAllAppointmentByDoctorId(id);
         if (appointments != null) {
             return ResponseEntity.ok(appointments);
         }

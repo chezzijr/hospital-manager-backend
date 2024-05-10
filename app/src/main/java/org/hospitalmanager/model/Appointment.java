@@ -6,20 +6,16 @@ import java.util.Date;
 
 public class Appointment {
 
-    public static enum Status {
-        SUCCESS, WAITING, FAILED
-    }
-
     private String id;
     private String patientId;
     private Date appointmentDate;
     private String doctorId;
     private String content;
-    private Status status;
+    private String status;
     private Location location;
     private Date dateCreated;
 
-    public Appointment(String id, String patientId, Date appointmentDate, String doctorId, String content, Status status, Location location, Date dateCreated) {
+    public Appointment(String id, String patientId, Date appointmentDate, String doctorId, String content, String status, Location location, Date dateCreated) {
         this.id = id;
         this.patientId = patientId;
         this.appointmentDate = appointmentDate;
@@ -50,7 +46,7 @@ public class Appointment {
         return content;
     }
 
-    public Status getStatus() {
+    public String getStatus() {
         return status;
     }
 
