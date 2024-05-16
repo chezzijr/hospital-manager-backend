@@ -2,14 +2,10 @@ package org.hospitalmanager.repository;
 
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
-import com.google.firebase.cloud.FirestoreClient;
-import com.google.firebase.database.GenericTypeIndicator;
-import org.hospitalmanager.dto.AppointmentWithId;
-import org.hospitalmanager.dto.MedicineWithId;
 import org.hospitalmanager.dto.PrescriptionWithId;
-import org.hospitalmanager.model.Appointment;
 import org.hospitalmanager.model.Medicine;
 import org.hospitalmanager.model.Prescription;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
@@ -27,7 +23,8 @@ public interface PrescriptionRepository {
 @Repository
 class PrescriptionRepositoryImpl implements PrescriptionRepository {
 
-    private final Firestore firestore = FirestoreClient.getFirestore();
+    @Autowired
+    private Firestore firestore;
 
     private Prescription convertDocumentSnapshotToPrescriptionClass(DocumentSnapshot documentSnapshot) {
         String id = documentSnapshot.getId();

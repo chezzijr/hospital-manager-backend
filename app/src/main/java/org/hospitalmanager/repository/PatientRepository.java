@@ -2,9 +2,9 @@ package org.hospitalmanager.repository;
 
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
-import com.google.firebase.cloud.FirestoreClient;
 import org.hospitalmanager.dto.PaitentWithId;
 import org.hospitalmanager.model.Patient;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -25,7 +25,8 @@ public interface PatientRepository {
 @Repository
 class PatientRepositoryImpl implements PatientRepository {
 
-    private final Firestore firestore = FirestoreClient.getFirestore();
+    @Autowired
+    private Firestore firestore;
 
     private Patient convertDocumentSnapshotToPatientClass(DocumentSnapshot documentSnapshot) {
         String id = documentSnapshot.getString("id");

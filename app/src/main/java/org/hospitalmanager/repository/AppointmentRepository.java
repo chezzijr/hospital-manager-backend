@@ -2,10 +2,10 @@ package org.hospitalmanager.repository;
 
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
-import com.google.firebase.cloud.FirestoreClient;
 import org.hospitalmanager.dto.AppointmentWithId;
 import org.hospitalmanager.model.Appointment;
 import org.hospitalmanager.model.Location;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
@@ -33,7 +33,8 @@ public interface AppointmentRepository {
 @Repository
 class AppointmentRepositoryImpl implements AppointmentRepository {
 
-    private final Firestore firestore = FirestoreClient.getFirestore();
+    @Autowired
+    private Firestore firestore;
 
     private Appointment convertDocumentSnapshotToAppointmentClass(DocumentSnapshot documentSnapshot) {
         String id = documentSnapshot.getString("id");

@@ -2,9 +2,9 @@ package org.hospitalmanager.repository;
 
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
-import com.google.firebase.cloud.FirestoreClient;
 import org.hospitalmanager.dto.FeedbackWithId;
 import org.hospitalmanager.model.Feedback;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
@@ -26,7 +26,8 @@ public interface FeedbackRepository {
 @Repository
 class FeedbackRepositoryImpl implements FeedbackRepository {
 
-    private final Firestore firestore = FirestoreClient.getFirestore();
+    @Autowired
+    private Firestore firestore;
 
     private Feedback convertDocumentSnapshotToFeedbackClass(DocumentSnapshot documentSnapshot) {
         String id = documentSnapshot.getString("id");
