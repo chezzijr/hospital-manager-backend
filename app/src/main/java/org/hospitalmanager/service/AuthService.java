@@ -135,7 +135,8 @@ class AuthServiceImpl implements AuthService {
     public void sendPasswordResetEmail(String email) throws AuthServiceException {
         // check if user exists
         try {
-            authRepository.getUserByEmail(email);
+            var user = authRepository.getUserByEmail(email);
+            authRepository.sendPasswordResetEmail(user.getEmail());
         } catch (UserNotFoundException e) {
             throw new AuthServiceException("USER_NOT_FOUND", e);
         }
