@@ -30,9 +30,18 @@ public class MedicineController {
         this.authorizationUtil = authorizationUtil;
     }
 
+    @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getAllMedicines() throws ExecutionException, InterruptedException {
+        ArrayList<MedicineWithId> medicineArrayList = medicineService.getMedicines();
+        if (!medicineArrayList.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.OK).body(medicineArrayList);
+        }
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("There is no medicines");
+    }
+
     @PostMapping(value = "/create", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> createNewMedicine(@RequestHeader HashMap<String, String> headers, @RequestBody Medicine medicine) throws ExecutionException, InterruptedException {
-        var token = authorizationUtil.isAuthorized(headers.get("authorization"), User.Role.DOCTOR);
+        var token = authorizationUtil.isAuthorized(headers.get("authorization"), User.Role.DOCTOR, User.Role.PATIENT, User.Role.ADMIN);
         if (token == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
         }
