@@ -2,9 +2,9 @@
 Backend của ứng dụng BKCare, môn LTNC HK232
 
 # Cài đặt
-Lưu ý: phải có JRE 21
-Tải file app.jar từ https://github.com/chezzijr/hospital-manager-backend/releases
-Chạy: `java -jar app.jar`
+- Lưu ý: phải có JRE 21
+- Tải file app.jar từ https://github.com/chezzijr/hospital-manager-backend/releases
+- Chạy: `java -jar app.jar`
 
 # Cài đặt từ mã nguồn
 Cần phải có JDK, JRE 21, Gradle 8.6, Makefile
@@ -16,3 +16,4 @@ Cần phải có JDK, JRE 21, Gradle 8.6, Makefile
 
 # Sử dụng docker
 - Pull từ https://hub.docker.com/r/chezzijr/bkcare-be
+- Chạy: `docker run -d -p 8080:8080 chezzijr/bkcare-be`
